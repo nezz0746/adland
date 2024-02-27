@@ -1,7 +1,9 @@
+import "./globals.css";
+import "@rainbow-me/rainbowkit/styles.css";
 import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
-import "./globals.css";
 import { cn } from "@/lib/utils";
+import Providers from "./providers";
 
 export const fontSans = FontSans({
   subsets: ["latin"],
@@ -26,7 +28,7 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
