@@ -27,6 +27,19 @@ import {
 import { Transport } from "viem";
 import { Chain } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+const truncateAddress = (address?: string) => {
+  if (!address) return "";
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
 
 const usePimlico = () => {
   const bundler = createPimlicoBundlerClient({
@@ -101,15 +114,6 @@ export default function Home() {
 
     const gasPrices = await bundler.getUserOperationGasPrice();
 
-    // const nonce = Number(
-    //   await getAccountNonce(publicClient, {
-    //     sender: account.account.address,
-    //     entryPoint,
-    //   })
-    // );
-
-    // console.log("nonce", nonce);
-
     const txHash = await account.sendTransaction({
       to,
       data: "0x123",
@@ -138,29 +142,47 @@ export default function Home() {
       <main className="p-4">
         {account && (
           <>
-            <p>{account.account.address}</p>
-            <p>{account.name}</p>
-          </>
-        )}
-        {account && (
-          <>
-            <Button
-              onClick={() => {
-                sendEth();
-              }}
-            >
-              Send ETH
-            </Button>
-            {txHash && (
-              <Link
-                target="_blank"
-                href={
-                  initialChain.blockExplorers?.default.url + "/tx/" + txHash
-                }
-              >
-                {txHash}
-              </Link>
-            )}
+            <Card>
+              <CardHeader>
+                <CardTitle>{account.name}</CardTitle>
+                <CardDescription>
+                  Smart account deployed on {initialChain.name}:{" "}
+                  <Link
+                    target="_blank"
+                    href={
+                      initialChain.blockExplorers?.default.url +
+                      "/address/" +
+                      account.account.address
+                    }
+                    className="underline"
+                  >
+                    {truncateAddress(account.account.address)}
+                  </Link>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                Send Transactions using your smart account
+              </CardContent>
+              <CardFooter>
+                <Button
+                  onClick={() => {
+                    sendEth();
+                  }}
+                >
+                  Send ETH
+                </Button>
+                {txHash && (
+                  <Link
+                    target="_blank"
+                    href={
+                      initialChain.blockExplorers?.default.url + "/tx/" + txHash
+                    }
+                  >
+                    {txHash}
+                  </Link>
+                )}
+              </CardFooter>
+            </Card>
           </>
         )}
       </main>
