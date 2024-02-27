@@ -2,8 +2,12 @@
 
 import { ConnectButton } from "@/components/connect-button";
 import { Separator } from "@/components/ui/separator";
+import { ReloadIcon, RocketIcon } from "@radix-ui/react-icons";
 import { http, usePublicClient, useWalletClient } from "wagmi";
+import { toast } from "sonner";
 import {
+  BundlerOutOfGasError,
+  InvalidSmartAccountNonceError,
   SmartAccountClient,
   createSmartAccountClient,
   walletClientToSmartAccountSigner,
@@ -24,7 +28,7 @@ import {
   SmartAccount,
   signerToSimpleSmartAccount,
 } from "permissionless/accounts";
-import { Transport } from "viem";
+import { Transport, BaseError } from "viem";
 import { Chain } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import {
@@ -35,6 +39,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const truncateAddress = (address?: string) => {
   if (!address) return "";
@@ -63,6 +68,7 @@ export default function Home() {
     Chain,
     SmartAccount<typeof entryPoint>
   > | null>(null);
+  const [sending, setSending] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const { data } = useWalletClient();
   const publicClient = usePublicClient();
@@ -80,8 +86,6 @@ export default function Home() {
         factoryAddress: "0x9406Cc6185a346906296840746125a0E44976454",
       }
     );
-
-    console.log({ bundler, paymaster });
 
     if (!bundler || !paymaster) return;
 
@@ -109,27 +113,36 @@ export default function Home() {
 
   const sendEth = async () => {
     if (!account || !publicClient) return;
+    setSending(true);
 
     const to = "0x2D232d68E797C2cB7430000bF2Eff2a9A9F908f1";
 
     const gasPrices = await bundler.getUserOperationGasPrice();
 
-    const txHash = await account.sendTransaction({
-      to,
-      data: "0x123",
-      value: BigInt(0),
-      maxFeePerGas: gasPrices.fast.maxFeePerGas,
-      maxPriorityFeePerGas: gasPrices.fast.maxPriorityFeePerGas,
-      // nonce: nonce + 10,
-      // maxFeePerGas: (
-      //   await bundler.getUserOperationGasPrice()
-      // ).fast.maxFeePerGas,
-      // maxPriorityFeePerGas: (
-      //   await bundler.getUserOperationGasPrice()
-      // ).fast.maxPriorityFeePerGas,
-    });
+    try {
+      const txHash = await account.sendTransaction({
+        to,
+        data: "0x123",
+        value: BigInt(0),
+        maxFeePerGas: gasPrices.fast.maxFeePerGas,
+        maxPriorityFeePerGas: gasPrices.fast.maxPriorityFeePerGas,
+      });
 
-    setTxHash(txHash);
+      setTxHash(txHash);
+    } catch (e) {
+      const error = e as BaseError;
+
+      const message = (error.details || "").toLowerCase();
+
+      if (InvalidSmartAccountNonceError.message.test(message)) {
+        toast.error("Invalid Smart Account Nonce");
+      } else if (BundlerOutOfGasError.message.test(message)) {
+        toast.error("Out of gas");
+      } else {
+        toast.error("An error occurred");
+      }
+    }
+    setSending(false);
   };
 
   return (
@@ -163,23 +176,36 @@ export default function Home() {
               <CardContent>
                 Send Transactions using your smart account
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex flex-col gap-2 items-start">
                 <Button
+                  disabled={sending}
                   onClick={() => {
                     sendEth();
                   }}
                 >
-                  Send ETH
+                  {sending && (
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Send{sending && "ing"} Transaction
                 </Button>
                 {txHash && (
-                  <Link
-                    target="_blank"
-                    href={
-                      initialChain.blockExplorers?.default.url + "/tx/" + txHash
-                    }
-                  >
-                    {txHash}
-                  </Link>
+                  <Alert>
+                    <RocketIcon className="h-4 w-4" />
+                    <AlertTitle>Heads up!</AlertTitle>
+                    <AlertDescription>
+                      You can add components to your app using the cli.
+                      <Link
+                        target="_blank"
+                        href={
+                          initialChain.blockExplorers?.default.url +
+                          "/tx/" +
+                          txHash
+                        }
+                      >
+                        <p>{truncateAddress(txHash)}</p>
+                      </Link>
+                    </AlertDescription>
+                  </Alert>
                 )}
               </CardFooter>
             </Card>
