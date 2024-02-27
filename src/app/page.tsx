@@ -111,7 +111,7 @@ export default function Home() {
     }
   }, [walletClient]);
 
-  const sendEth = async () => {
+  const sendEth = async (nonce?: number) => {
     if (!account || !publicClient) return;
     setSending(true);
 
@@ -123,6 +123,7 @@ export default function Home() {
       const txHash = await account.sendTransaction({
         to,
         data: "0x123",
+        nonce,
         value: BigInt(0),
         maxFeePerGas: gasPrices.fast.maxFeePerGas,
         maxPriorityFeePerGas: gasPrices.fast.maxPriorityFeePerGas,
@@ -135,7 +136,13 @@ export default function Home() {
       const message = (error.details || "").toLowerCase();
 
       if (InvalidSmartAccountNonceError.message.test(message)) {
-        toast.error("Invalid Smart Account Nonce");
+        if (!nonce) {
+          const nextNonce = Number(await account.account.getNonce()) + 1;
+
+          sendEth(nextNonce);
+        } else {
+          toast.error("Invalid Smart Account Nonce");
+        }
       } else if (BundlerOutOfGasError.message.test(message)) {
         toast.error("Out of gas");
       } else {
@@ -191,19 +198,23 @@ export default function Home() {
                 {txHash && (
                   <Alert>
                     <RocketIcon className="h-4 w-4" />
-                    <AlertTitle>Heads up!</AlertTitle>
+                    <AlertTitle>Transaction Successfull!</AlertTitle>
                     <AlertDescription>
-                      You can add components to your app using the cli.
-                      <Link
-                        target="_blank"
-                        href={
-                          initialChain.blockExplorers?.default.url +
-                          "/tx/" +
-                          txHash
-                        }
-                      >
-                        <p>{truncateAddress(txHash)}</p>
-                      </Link>
+                      You can see you transaction on this explorer following
+                      this link:
+                      <span>
+                        <Link
+                          target="_blank"
+                          className="underline"
+                          href={
+                            initialChain.blockExplorers?.default.url +
+                            "/tx/" +
+                            txHash
+                          }
+                        >
+                          <p>{truncateAddress(txHash)}</p>
+                        </Link>
+                      </span>
                     </AlertDescription>
                   </Alert>
                 )}
