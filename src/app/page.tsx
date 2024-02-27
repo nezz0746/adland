@@ -40,26 +40,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-const truncateAddress = (address?: string) => {
-  if (!address) return "";
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-};
-
-const usePimlico = () => {
-  const bundler = createPimlicoBundlerClient({
-    chain: initialChain,
-    transport: http(pimilcoURLV1),
-    entryPoint,
-  });
-
-  const paymaster = createPimlicoPaymasterClient({
-    transport: http(pimilcoURLV2),
-    entryPoint,
-  });
-
-  return { bundler, paymaster };
-};
+import { usePimlico } from "@/lib/pimlico";
+import { truncateAddress } from "@/lib/utils";
 
 export default function Home() {
   const [account, setAccount] = useState<SmartAccountClient<
