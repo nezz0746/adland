@@ -52,13 +52,12 @@ export default function Home() {
   > | null>(null);
   const [sending, setSending] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
-  const { data } = useWalletClient();
   const publicClient = usePublicClient();
   const walletClient = useWalletClient();
   const { bundler, paymaster } = usePimlico();
 
   const createAccount = async () => {
-    if (!data?.account || !walletClient.data || !publicClient) return;
+    if (!walletClient.data || !publicClient) return;
 
     const simpleSmartAccountClient = await signerToSimpleSmartAccount(
       publicClient,
@@ -182,21 +181,23 @@ export default function Home() {
                     <RocketIcon className="h-4 w-4" />
                     <AlertTitle>Transaction Successfull!</AlertTitle>
                     <AlertDescription>
-                      You can see you transaction on this explorer following
-                      this link:
-                      <span>
-                        <Link
-                          target="_blank"
-                          className="underline"
-                          href={
-                            initialChain.blockExplorers?.default.url +
-                            "/tx/" +
-                            txHash
-                          }
-                        >
-                          <p>{truncateAddress(txHash)}</p>
-                        </Link>
-                      </span>
+                      <p>
+                        You can see you transaction on this explorer following
+                        this link:
+                        <span className="ml-2">
+                          <Link
+                            target="_blank"
+                            className="underline"
+                            href={
+                              initialChain.blockExplorers?.default.url +
+                              "/tx/" +
+                              txHash
+                            }
+                          >
+                            {truncateAddress(txHash)}
+                          </Link>
+                        </span>
+                      </p>
                     </AlertDescription>
                   </Alert>
                 )}
