@@ -1,9 +1,9 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { initialChain } from "./constants";
+import { initialChain, walletConnectProjectId } from "./constants";
 
 export const config = getDefaultConfig({
-  appName: "My RainbowKit App",
-  projectId: "YOUR_PROJECT_ID",
+  appName: "Nezzar's AA Sandbox",
+  projectId: walletConnectProjectId,
   chains: [initialChain],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });
