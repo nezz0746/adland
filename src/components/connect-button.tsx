@@ -17,7 +17,6 @@ export const ConnectButton = () => {
   return (
     <RKConnectButton.Custom>
       {(props) => {
-        console.log(props.account);
         const {
           account,
           chain,
