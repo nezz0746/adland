@@ -8,6 +8,8 @@ env:
 jobs:
   check:
     strategy:
+      matrix:
+        os: [ubuntu-latest]
       fail-fast: true
 
     name: Foundry project
@@ -26,9 +28,12 @@ jobs:
         run: |
           forge --version
           forge build --sizes
+        working-directory: foundry
         id: build
+
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          forge test -vvvv
+        working-directory: foundry
         id: test
