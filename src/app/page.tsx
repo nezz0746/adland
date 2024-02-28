@@ -3,33 +3,8 @@
 import { ConnectButton } from "@/components/connect-button";
 import { Separator } from "@/components/ui/separator";
 import { ReloadIcon, RocketIcon } from "@radix-ui/react-icons";
-import { http, usePublicClient, useWalletClient } from "wagmi";
-import { toast } from "sonner";
-import {
-  BundlerOutOfGasError,
-  InvalidSmartAccountNonceError,
-  SmartAccountClient,
-  createSmartAccountClient,
-  walletClientToSmartAccountSigner,
-} from "permissionless";
-import {
-  createPimlicoPaymasterClient,
-  createPimlicoBundlerClient,
-} from "permissionless/clients/pimlico";
-import {
-  entryPoint,
-  initialChain,
-  pimilcoURLV1,
-  pimilcoURLV2,
-} from "@/lib/constants";
-import { useEffect, useState } from "react";
+import { initialChain } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import {
-  SmartAccount,
-  signerToSimpleSmartAccount,
-} from "permissionless/accounts";
-import { Transport, BaseError } from "viem";
-import { Chain } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
 import {
   Card,
@@ -44,93 +19,17 @@ import { usePimlico } from "@/lib/pimlico";
 import { truncateAddress } from "@/lib/utils";
 
 export default function Home() {
-  const [account, setAccount] = useState<SmartAccountClient<
-    typeof entryPoint,
-    Transport,
-    Chain,
-    SmartAccount<typeof entryPoint>
-  > | null>(null);
-  const [sending, setSending] = useState(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const publicClient = usePublicClient();
-  const walletClient = useWalletClient();
-  const { bundler, paymaster } = usePimlico();
+  const {
+    account,
+    senTransaction: { send, loading, txHash },
+  } = usePimlico();
 
-  const createAccount = async () => {
-    if (!walletClient.data || !publicClient) return;
-
-    const simpleSmartAccountClient = await signerToSimpleSmartAccount(
-      publicClient,
-      {
-        entryPoint,
-        signer: walletClientToSmartAccountSigner(walletClient.data),
-        factoryAddress: "0x9406Cc6185a346906296840746125a0E44976454",
-      }
-    );
-
-    if (!bundler || !paymaster) return;
-
-    const smartAccountClient = createSmartAccountClient({
-      account: simpleSmartAccountClient,
-      chain: initialChain,
-      bundlerTransport: http(pimilcoURLV1),
-      entryPoint,
-      middleware: {
-        gasPrice: async () => {
-          return (await bundler.getUserOperationGasPrice()).fast;
-        },
-        sponsorUserOperation: paymaster.sponsorUserOperation,
-      },
-    });
-
-    setAccount(smartAccountClient);
-  };
-
-  useEffect(() => {
-    if (!account) {
-      createAccount();
-    }
-  }, [walletClient]);
-
-  const sendEth = async (nonce?: number) => {
-    if (!account || !publicClient) return;
-    setSending(true);
-
+  const sendTransaction = async () => {
     const to = "0x2D232d68E797C2cB7430000bF2Eff2a9A9F908f1";
+    const data = "0x123";
+    const value = BigInt(0);
 
-    const gasPrices = await bundler.getUserOperationGasPrice();
-
-    try {
-      const txHash = await account.sendTransaction({
-        to,
-        data: "0x123",
-        nonce,
-        value: BigInt(0),
-        maxFeePerGas: gasPrices.fast.maxFeePerGas,
-        maxPriorityFeePerGas: gasPrices.fast.maxPriorityFeePerGas,
-      });
-
-      setTxHash(txHash);
-    } catch (e) {
-      const error = e as BaseError;
-
-      const message = (error.details || "").toLowerCase();
-
-      if (InvalidSmartAccountNonceError.message.test(message)) {
-        if (!nonce) {
-          const nextNonce = Number(await account.account.getNonce()) + 1;
-
-          sendEth(nextNonce);
-        } else {
-          toast.error("Invalid Smart Account Nonce");
-        }
-      } else if (BundlerOutOfGasError.message.test(message)) {
-        toast.error("Out of gas");
-      } else {
-        toast.error("An error occurred");
-      }
-    }
-    setSending(false);
+    send({ to, data, value });
   };
 
   return (
@@ -166,15 +65,15 @@ export default function Home() {
               </CardContent>
               <CardFooter className="flex flex-col gap-2 items-start">
                 <Button
-                  disabled={sending}
+                  disabled={loading}
                   onClick={() => {
-                    sendEth();
+                    sendTransaction();
                   }}
                 >
-                  {sending && (
+                  {loading && (
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Send{sending && "ing"} Transaction
+                  Send{loading && "ing"} Transaction
                 </Button>
                 {txHash && (
                   <Alert>
