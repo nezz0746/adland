@@ -19,6 +19,7 @@ import {
   walletClientToSmartAccountSigner,
 } from "permissionless";
 import {
+  SimpleSmartAccount,
   SmartAccount,
   signerToSimpleSmartAccount,
 } from "permissionless/accounts";
@@ -30,18 +31,27 @@ type SendTransactionArgs = {
   value?: bigint;
 };
 
+export type AppSmartAccountClient = SmartAccountClient<
+  typeof entryPoint,
+  Transport,
+  Chain,
+  SmartAccount<typeof entryPoint>
+>;
+
+export type AppSmartSigner = SimpleSmartAccount<
+  "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+  Transport,
+  Chain
+>;
+
 export const usePimlico = () => {
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
 
   const [sending, setSending] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
-  const [account, setAccount] = useState<SmartAccountClient<
-    typeof entryPoint,
-    Transport,
-    Chain,
-    SmartAccount<typeof entryPoint>
-  > | null>(null);
+  const [accountClient, setAccountClient] =
+    useState<AppSmartAccountClient | null>(null);
 
   const bundler = createPimlicoBundlerClient({
     chain: initialChain,
@@ -57,19 +67,16 @@ export const usePimlico = () => {
   const getAccount = async () => {
     if (!walletClient || !publicClient) return;
 
-    const simpleSmartAccountClient = await signerToSimpleSmartAccount(
-      publicClient,
-      {
-        entryPoint,
-        signer: walletClientToSmartAccountSigner(walletClient),
-        factoryAddress: "0x9406Cc6185a346906296840746125a0E44976454",
-      }
-    );
+    const simpleSmartAccount = await signerToSimpleSmartAccount(publicClient, {
+      entryPoint,
+      signer: walletClientToSmartAccountSigner(walletClient),
+      factoryAddress: "0x9406Cc6185a346906296840746125a0E44976454",
+    });
 
     if (!bundler || !paymaster) return;
 
     const smartAccountClient = createSmartAccountClient({
-      account: simpleSmartAccountClient,
+      account: simpleSmartAccount,
       chain: initialChain,
       bundlerTransport: http(pimilcoURLV1),
       entryPoint,
@@ -81,7 +88,7 @@ export const usePimlico = () => {
       },
     });
 
-    setAccount(smartAccountClient);
+    setAccountClient(smartAccountClient);
   };
 
   useEffect(() => {
@@ -89,7 +96,7 @@ export const usePimlico = () => {
   }, [walletClient]);
 
   const sendTransaction = async (args: SendTransactionArgs, nonce?: number) => {
-    if (!account || !publicClient) return;
+    if (!accountClient || !publicClient) return;
     setSending(true);
 
     const { to, data, value } = args;
@@ -97,7 +104,7 @@ export const usePimlico = () => {
     const gasPrices = await bundler.getUserOperationGasPrice();
 
     try {
-      const txHash = await account.sendTransaction({
+      const txHash = await accountClient.sendTransaction({
         to,
         data,
         nonce,
@@ -114,7 +121,7 @@ export const usePimlico = () => {
 
       if (InvalidSmartAccountNonceError.message.test(message)) {
         if (!nonce) {
-          const nextNonce = Number(await account.account.getNonce()) + 1;
+          const nextNonce = Number(await accountClient.account.getNonce()) + 1;
 
           sendTransaction(args, nextNonce);
         } else {
@@ -132,7 +139,7 @@ export const usePimlico = () => {
   return {
     bundler,
     paymaster,
-    account,
+    accountClient,
     senTransaction: {
       send: sendTransaction,
       loading: sending,

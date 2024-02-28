@@ -10,42 +10,25 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { usePimlico } from "@/lib/pimlico";
 import { truncateAddress } from "@/lib/utils";
 import { counterAbi, counterAddress, useReadCounterNumber } from "@/generated";
 import { encodeFunctionData } from "viem";
 import { useWatchContractEvent } from "wagmi";
 import { queryClient } from "./providers";
+import { Input } from "@/components/ui/input";
 
 export default function Home() {
-  const {
-    account,
-    senTransaction: { send, loading, txHash },
-  } = usePimlico();
-
-  const { data: number, queryKey } = useReadCounterNumber();
-
-  useWatchContractEvent({
-    abi: counterAbi,
-    address: counterAddress[11155111],
-    eventName: "NumberChanged",
-    onLogs: (logs) => {
-      const newNumber = logs[0].args.newNumber;
-
-      queryClient.setQueryData(queryKey, newNumber);
-    },
-  });
+  const { accountClient } = usePimlico();
 
   const incrementCounter = async () => {
     try {
-      if (!account) return;
+      if (!accountClient) return;
 
-      account.sendTransaction({
+      accountClient.sendTransaction({
         to: counterAddress[11155111],
         data: encodeFunctionData({
           abi: counterAbi,
@@ -59,14 +42,6 @@ export default function Home() {
     }
   };
 
-  const sendTransaction = async () => {
-    const to = "0x2D232d68E797C2cB7430000bF2Eff2a9A9F908f1";
-    const data = "0x123";
-    const value = BigInt(0);
-
-    send({ to, data, value });
-  };
-
   return (
     <>
       <nav className="p-4 flex flex-row justify-between">
@@ -74,84 +49,86 @@ export default function Home() {
         <ConnectButton />
       </nav>
       <Separator />
-      <main className="p-4">
-        {account && (
-          <>
-            <Card>
-              <CardHeader>
-                <CardTitle>{account.name}</CardTitle>
-                <CardDescription>
-                  Smart account deployed on {initialChain.name}:{" "}
+      <main className="p-4 flex flex-col gap-2">
+        {accountClient && (
+          <Card>
+            <CardHeader className="flex flex-row gap-2">
+              <div className="flex-grow">
+                <CardTitle className="">Counter</CardTitle>
+                <CardDescription className="">
+                  Increment and watch the counter grow. Contract @{" "}
                   <Link
                     target="_blank"
                     href={
                       initialChain.blockExplorers?.default.url +
                       "/address/" +
-                      account.account.address
+                      counterAddress[
+                        initialChain.id as keyof typeof counterAddress
+                      ]
                     }
                     className="underline"
                   >
-                    {truncateAddress(account.account.address)}
+                    {truncateAddress(
+                      counterAddress[
+                        initialChain.id as keyof typeof counterAddress
+                      ]
+                    )}
                   </Link>
                 </CardDescription>
-              </CardHeader>
-              <CardContent>
-                Send Transactions using your smart account
-              </CardContent>
-              <CardFooter className="flex flex-col gap-2 items-start">
+              </div>
+              <CounterDisplay />
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-row justify-between gap-2">
                 <Button
-                  disabled={loading}
                   onClick={() => {
-                    sendTransaction();
+                    incrementCounter();
                   }}
                 >
-                  {loading && (
-                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Send{loading && "ing"} Transaction
+                  Increment
                 </Button>
-                {txHash && (
-                  <Alert>
-                    <RocketIcon className="h-4 w-4" />
-                    <AlertTitle>Transaction Successfull!</AlertTitle>
-                    <AlertDescription>
-                      <p>
-                        You can see you transaction on this explorer following
-                        this link:
-                        <span className="ml-2">
-                          <Link
-                            target="_blank"
-                            className="underline"
-                            href={
-                              initialChain.blockExplorers?.default.url +
-                              "/tx/" +
-                              txHash
-                            }
-                          >
-                            {truncateAddress(txHash)}
-                          </Link>
-                        </span>
-                      </p>
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </CardFooter>
-            </Card>
-          </>
-        )}
-        {account && (
-          <>
-            <p>{Number(number)}</p>
-            <Button
-              onClick={() => {
-                incrementCounter();
-              }}
-            >
-              Increment
-            </Button>
-          </>
+                <div className="flex w-full max-w-sm items-center space-x-2">
+                  <Input
+                    type="number"
+                    placeholder="New number"
+                    autoComplete="off"
+                    min={0}
+                    step={1}
+                    onChange={(e) => {
+                      // setNumberInputValue(e.target.valueAsNumber)
+                    }}
+                  />
+                  <Button disabled type="submit">
+                    Set Number
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </main>
     </>
   );
 }
+
+const CounterDisplay = () => {
+  const { data: number, queryKey } = useReadCounterNumber();
+
+  useWatchContractEvent({
+    abi: counterAbi,
+    address: counterAddress[11155111],
+    eventName: "NumberChanged",
+    onLogs: (logs) => {
+      const newNumber = logs[0].args.newNumber;
+
+      queryClient.setQueryData(queryKey, newNumber);
+    },
+  });
+
+  return (
+    <div className="flex flex-col gap-1 items-center">
+      <CardDescription>Value</CardDescription>
+      <p className="text-3xl">{Number(number)}</p>
+    </div>
+  );
+};
