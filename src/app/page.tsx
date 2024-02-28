@@ -22,13 +22,13 @@ import { queryClient } from "./providers";
 import { Input } from "@/components/ui/input";
 
 export default function Home() {
-  const { accountClient } = usePimlico();
+  const { smartAccountClient } = usePimlico();
 
   const incrementCounter = async () => {
     try {
-      if (!accountClient) return;
+      if (!smartAccountClient) return;
 
-      accountClient.sendTransaction({
+      smartAccountClient.sendTransaction({
         to: counterAddress[11155111],
         data: encodeFunctionData({
           abi: counterAbi,
@@ -50,7 +50,7 @@ export default function Home() {
       </nav>
       <Separator />
       <main className="p-4 flex flex-col gap-2">
-        {accountClient && (
+        {smartAccountClient && (
           <Card>
             <CardHeader className="flex flex-row gap-2">
               <div className="flex-grow">
