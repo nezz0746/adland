@@ -9,6 +9,9 @@ import {
 // Counter
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ */
 export const counterAbi = [
   {
     type: 'function',
@@ -32,6 +35,21 @@ export const counterAbi = [
     stateMutability: 'nonpayable',
   },
 ] as const
+
+/**
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ */
+export const counterAddress = {
+  11155111: '0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741',
+} as const
+
+/**
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ */
+export const counterConfig = {
+  address: counterAddress,
+  abi: counterAbi,
+} as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // IERC721TokenReceiver
@@ -644,64 +662,88 @@ export const mockErc721Abi = [
 
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link counterAbi}__
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
  */
 export const useReadCounter = /*#__PURE__*/ createUseReadContract({
   abi: counterAbi,
+  address: counterAddress,
 })
 
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link counterAbi}__ and `functionName` set to `"number"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
  */
 export const useReadCounterNumber = /*#__PURE__*/ createUseReadContract({
   abi: counterAbi,
+  address: counterAddress,
   functionName: 'number',
 })
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link counterAbi}__
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
  */
 export const useWriteCounter = /*#__PURE__*/ createUseWriteContract({
   abi: counterAbi,
+  address: counterAddress,
 })
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link counterAbi}__ and `functionName` set to `"increment"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
  */
 export const useWriteCounterIncrement = /*#__PURE__*/ createUseWriteContract({
   abi: counterAbi,
+  address: counterAddress,
   functionName: 'increment',
 })
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link counterAbi}__ and `functionName` set to `"setNumber"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
  */
 export const useWriteCounterSetNumber = /*#__PURE__*/ createUseWriteContract({
   abi: counterAbi,
+  address: counterAddress,
   functionName: 'setNumber',
 })
 
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link counterAbi}__
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
  */
 export const useSimulateCounter = /*#__PURE__*/ createUseSimulateContract({
   abi: counterAbi,
+  address: counterAddress,
 })
 
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link counterAbi}__ and `functionName` set to `"increment"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
  */
 export const useSimulateCounterIncrement =
   /*#__PURE__*/ createUseSimulateContract({
     abi: counterAbi,
+    address: counterAddress,
     functionName: 'increment',
   })
 
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link counterAbi}__ and `functionName` set to `"setNumber"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
  */
 export const useSimulateCounterSetNumber =
   /*#__PURE__*/ createUseSimulateContract({
     abi: counterAbi,
+    address: counterAddress,
     functionName: 'setNumber',
   })
 
