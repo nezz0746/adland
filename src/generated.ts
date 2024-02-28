@@ -10,7 +10,7 @@ import {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
  */
 export const counterAbi = [
   {
@@ -34,17 +34,30 @@ export const counterAbi = [
     outputs: [],
     stateMutability: 'nonpayable',
   },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'newNumber',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+    ],
+    name: 'NumberChanged',
+  },
 ] as const
 
 /**
- * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
  */
 export const counterAddress = {
-  11155111: '0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741',
+  11155111: '0xa609f358200527A83281B4fae69378831158165e',
 } as const
 
 /**
- * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
  */
 export const counterConfig = {
   address: counterAddress,
@@ -663,7 +676,7 @@ export const mockErc721Abi = [
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link counterAbi}__
  *
- * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
  */
 export const useReadCounter = /*#__PURE__*/ createUseReadContract({
   abi: counterAbi,
@@ -673,7 +686,7 @@ export const useReadCounter = /*#__PURE__*/ createUseReadContract({
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link counterAbi}__ and `functionName` set to `"number"`
  *
- * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
  */
 export const useReadCounterNumber = /*#__PURE__*/ createUseReadContract({
   abi: counterAbi,
@@ -684,7 +697,7 @@ export const useReadCounterNumber = /*#__PURE__*/ createUseReadContract({
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link counterAbi}__
  *
- * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
  */
 export const useWriteCounter = /*#__PURE__*/ createUseWriteContract({
   abi: counterAbi,
@@ -694,7 +707,7 @@ export const useWriteCounter = /*#__PURE__*/ createUseWriteContract({
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link counterAbi}__ and `functionName` set to `"increment"`
  *
- * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
  */
 export const useWriteCounterIncrement = /*#__PURE__*/ createUseWriteContract({
   abi: counterAbi,
@@ -705,7 +718,7 @@ export const useWriteCounterIncrement = /*#__PURE__*/ createUseWriteContract({
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link counterAbi}__ and `functionName` set to `"setNumber"`
  *
- * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
  */
 export const useWriteCounterSetNumber = /*#__PURE__*/ createUseWriteContract({
   abi: counterAbi,
@@ -716,7 +729,7 @@ export const useWriteCounterSetNumber = /*#__PURE__*/ createUseWriteContract({
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link counterAbi}__
  *
- * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
  */
 export const useSimulateCounter = /*#__PURE__*/ createUseSimulateContract({
   abi: counterAbi,
@@ -726,7 +739,7 @@ export const useSimulateCounter = /*#__PURE__*/ createUseSimulateContract({
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link counterAbi}__ and `functionName` set to `"increment"`
  *
- * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
  */
 export const useSimulateCounterIncrement =
   /*#__PURE__*/ createUseSimulateContract({
@@ -738,13 +751,35 @@ export const useSimulateCounterIncrement =
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link counterAbi}__ and `functionName` set to `"setNumber"`
  *
- * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xBDB0c8a99c1134eA09558FcAC62F593cB1e31741)
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
  */
 export const useSimulateCounterSetNumber =
   /*#__PURE__*/ createUseSimulateContract({
     abi: counterAbi,
     address: counterAddress,
     functionName: 'setNumber',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link counterAbi}__
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
+ */
+export const useWatchCounterEvent = /*#__PURE__*/ createUseWatchContractEvent({
+  abi: counterAbi,
+  address: counterAddress,
+})
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link counterAbi}__ and `eventName` set to `"NumberChanged"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xa609f358200527A83281B4fae69378831158165e)
+ */
+export const useWatchCounterNumberChangedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: counterAbi,
+    address: counterAddress,
+    eventName: 'NumberChanged',
   })
 
 /**
