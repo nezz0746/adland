@@ -17,12 +17,47 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { usePimlico } from "@/lib/pimlico";
 import { truncateAddress } from "@/lib/utils";
+import { counterAbi, counterAddress, useReadCounterNumber } from "@/generated";
+import { encodeFunctionData } from "viem";
+import { useWatchContractEvent } from "wagmi";
+import { queryClient } from "./providers";
 
 export default function Home() {
   const {
     account,
     senTransaction: { send, loading, txHash },
   } = usePimlico();
+
+  const { data: number, queryKey } = useReadCounterNumber();
+
+  useWatchContractEvent({
+    abi: counterAbi,
+    address: counterAddress[11155111],
+    eventName: "NumberChanged",
+    onLogs: (logs) => {
+      const newNumber = logs[0].args.newNumber;
+
+      queryClient.setQueryData(queryKey, newNumber);
+    },
+  });
+
+  const incrementCounter = async () => {
+    try {
+      if (!account) return;
+
+      account.sendTransaction({
+        to: counterAddress[11155111],
+        data: encodeFunctionData({
+          abi: counterAbi,
+          functionName: "increment",
+          args: [],
+        }),
+        value: BigInt(0),
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const sendTransaction = async () => {
     const to = "0x2D232d68E797C2cB7430000bF2Eff2a9A9F908f1";
@@ -102,6 +137,18 @@ export default function Home() {
                 )}
               </CardFooter>
             </Card>
+          </>
+        )}
+        {account && (
+          <>
+            <p>{Number(number)}</p>
+            <Button
+              onClick={() => {
+                incrementCounter();
+              }}
+            >
+              Increment
+            </Button>
           </>
         )}
       </main>

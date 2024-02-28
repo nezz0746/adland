@@ -8,7 +8,7 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { config } from "@/lib/wagmi";
 import { initialChain } from "@/lib/constants";
 
-const queryClient = new QueryClient();
+export const queryClient = new QueryClient();
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
