@@ -1,5 +1,5 @@
 import { defineConfig } from "@wagmi/cli";
-import { foundry } from "@wagmi/cli/plugins";
+import { foundry, react } from "@wagmi/cli/plugins";
 
 export default defineConfig({
   out: "src/generated.ts",
@@ -8,5 +8,6 @@ export default defineConfig({
     foundry({
       project: "./foundry",
     }),
+    react(),
   ],
 });
