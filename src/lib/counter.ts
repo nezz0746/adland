@@ -9,7 +9,7 @@ import {
 } from "viem";
 import { counterAbi, counterAddress } from "@/generated";
 import { toast } from "sonner";
-import { bundler } from "./pimlico.config";
+import { _handleBundlerErrors, bundler } from "./pimlico.config";
 
 const useCounter = () => {
   const { smartAccount } = useSmartAccount();
@@ -43,7 +43,7 @@ const useCounter = () => {
       if (error instanceof UserRejectedRequestError) {
         toast.error("User rejected request");
       } else {
-        toast.error("An error occurred");
+        _handleBundlerErrors(err);
       }
     },
   });

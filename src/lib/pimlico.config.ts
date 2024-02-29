@@ -2,6 +2,7 @@ import {
   BundlerOutOfGasError,
   InvalidSmartAccountNonceError,
   SmartAccountClient,
+  SmartAccountValidationRevertedError,
 } from "permissionless";
 import {
   Entrypoint,
@@ -38,20 +39,24 @@ export const bundler = createPimlicoBundlerClient({
 });
 
 export const paymaster = createPimlicoPaymasterClient({
+  chain: initialChain,
   transport: http(pimilcoURLV2),
   entryPoint,
 });
 
-export const _handleErrors = (e: unknown) => {
+export const _handleBundlerErrors = (e: unknown) => {
   const error = e as BaseError;
 
   const message = (error.details || "").toLowerCase();
 
   if (InvalidSmartAccountNonceError.message.test(message)) {
     toast.error("Invalid Smart Account Nonce");
+  } else if (SmartAccountValidationRevertedError.message.test(message)) {
+    toast.error("Smart Account Validation Reverted");
   } else if (BundlerOutOfGasError.message.test(message)) {
     toast.error("Out of gas");
   } else {
+    console.error(e);
     toast.error("An error occurred");
   }
 };
