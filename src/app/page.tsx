@@ -14,47 +14,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useSmartAccount } from "@/lib/pimlico";
-import { truncateAddress } from "@/lib/utils";
-import { counterAbi, counterAddress } from "@/generated";
-import { BaseError, UserRejectedRequestError, encodeFunctionData } from "viem";
-import { Input } from "@/components/ui/input";
+import { getExplorerLink, truncateAddress } from "@/lib/utils";
+import { counterAddress } from "@/generated";
 import CounterDisplay from "@/components/counter-display";
-import { useState } from "react";
-import { bundler } from "@/lib/pimlico.config";
-import { toast } from "sonner";
+import useCounter from "@/lib/counter";
+import CounterInput from "@/components/counter-input";
 
 export default function Home() {
-  const [sendingTransaction, setSendingTransaction] = useState(false);
   const { smartAccount } = useSmartAccount();
+  const { writeCounter, isPending } = useCounter();
 
-  const incrementCounter = async () => {
-    try {
-      if (!smartAccount) return;
-
-      setSendingTransaction(true);
-
-      const { fast } = await bundler.getUserOperationGasPrice();
-
-      await smartAccount.sendTransaction({
-        to: counterAddress[11155111],
-        data: encodeFunctionData({
-          abi: counterAbi,
-          functionName: "increment",
-          args: [],
-        }),
-        value: BigInt(0),
-        maxFeePerGas: fast.maxFeePerGas,
-        maxPriorityFeePerGas: fast.maxPriorityFeePerGas,
-      });
-    } catch (err) {
-      const error = err as BaseError;
-
-      if (error instanceof UserRejectedRequestError) {
-        toast.error("User rejected request");
-      }
-    }
-
-    setSendingTransaction(false);
+  const increment = () => {
+    writeCounter({
+      functionName: "increment",
+    });
   };
 
   return (
@@ -74,13 +47,11 @@ export default function Home() {
                   Increment and watch the counter grow. Contract @{" "}
                   <Link
                     target="_blank"
-                    href={
-                      initialChain.blockExplorers?.default.url +
-                      "/address/" +
-                      counterAddress[
-                        initialChain.id as keyof typeof counterAddress
-                      ]
-                    }
+                    href={getExplorerLink(
+                      initialChain,
+                      counterAddress[11155111],
+                      "address"
+                    )}
                     className="underline"
                   >
                     {truncateAddress(
@@ -95,32 +66,13 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-row justify-between gap-2">
-                <Button
-                  disabled={sendingTransaction}
-                  onClick={() => {
-                    incrementCounter();
-                  }}
-                >
-                  {sendingTransaction && (
+                <Button disabled={isPending} onClick={increment}>
+                  {isPending && (
                     <ReloadIcon className="w-4 h-4 animate-spin mr-1" />
                   )}
                   Increment
                 </Button>
-                <div className="flex w-full max-w-sm items-center space-x-2">
-                  <Input
-                    type="number"
-                    placeholder="New number"
-                    autoComplete="off"
-                    min={0}
-                    step={1}
-                    onChange={(e) => {
-                      // setNumberInputValue(e.target.valueAsNumber)
-                    }}
-                  />
-                  <Button disabled type="submit">
-                    Set Number
-                  </Button>
-                </div>
+                <CounterInput />
               </div>
             </CardContent>
           </Card>

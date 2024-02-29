@@ -13,6 +13,8 @@ export const initialChain: Chain = sepolia;
 
 export const entryPoint = ENTRYPOINT_ADDRESS_V06;
 
+export type Entrypoint = typeof entryPoint;
+
 export const pimilcoURLV2 =
   "https://api.pimlico.io/v2/sepolia/rpc?apikey=" + pimlicoAPIKey;
 export const pimilcoURLV1 =

@@ -4,6 +4,7 @@ import {
   SmartAccountClient,
 } from "permissionless";
 import {
+  Entrypoint,
   entryPoint,
   initialChain,
   pimilcoURLV1,
@@ -18,10 +19,10 @@ import {
 import { toast } from "sonner";
 
 export type AppSmartAccountClient = SmartAccountClient<
-  typeof entryPoint,
+  Entrypoint,
   Transport,
   Chain,
-  SmartAccount<typeof entryPoint>
+  SmartAccount<Entrypoint>
 >;
 
 export type AppSmartSigner = SimpleSmartAccount<
