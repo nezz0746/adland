@@ -1,7 +1,7 @@
 import { entryPoint, initialChain, pimilcoURLV1 } from "./constants";
 import { http } from "viem";
 import { usePublicClient, useWalletClient } from "wagmi";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import {
   createSmartAccountClient,
   walletClientToSmartAccountSigner,
@@ -9,9 +9,15 @@ import {
 import { signerToSimpleSmartAccount } from "permissionless/accounts";
 import { AppSmartAccountClient, bundler, paymaster } from "./pimlico.config";
 
-const PimlicoContext = createContext({});
+type PimlicoContextType = {
+  smartAccount: AppSmartAccountClient | null;
+};
 
-export const usePimlico = () => {
+const PimlicoContext = createContext<PimlicoContextType>({
+  smartAccount: null,
+});
+
+const usePimlico = () => {
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
 
@@ -52,4 +58,27 @@ export const usePimlico = () => {
   return {
     smartAccountClient,
   };
+};
+
+export const PimlicoProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const value = usePimlico();
+
+  return (
+    <PimlicoContext.Provider value={{ smartAccount: value.smartAccountClient }}>
+      {children}
+    </PimlicoContext.Provider>
+  );
+};
+
+export const useSmartAccount = () => {
+  const data = useContext(PimlicoContext);
+
+  if (!data)
+    throw new Error("useSmartAccount must be used within a PimlicoProvider");
+
+  return data;
 };

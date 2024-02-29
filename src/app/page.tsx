@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { usePimlico } from "@/lib/pimlico";
+import { useSmartAccount } from "@/lib/pimlico";
 import { truncateAddress } from "@/lib/utils";
 import { counterAbi, counterAddress } from "@/generated";
 import { BaseError, UserRejectedRequestError, encodeFunctionData } from "viem";
@@ -25,17 +25,17 @@ import { toast } from "sonner";
 
 export default function Home() {
   const [sendingTransaction, setSendingTransaction] = useState(false);
-  const { smartAccountClient } = usePimlico();
+  const { smartAccount } = useSmartAccount();
 
   const incrementCounter = async () => {
     try {
-      if (!smartAccountClient) return;
+      if (!smartAccount) return;
 
       setSendingTransaction(true);
 
       const { fast } = await bundler.getUserOperationGasPrice();
 
-      await smartAccountClient.sendTransaction({
+      await smartAccount.sendTransaction({
         to: counterAddress[11155111],
         data: encodeFunctionData({
           abi: counterAbi,
@@ -65,7 +65,7 @@ export default function Home() {
       </nav>
       <Separator />
       <main className="p-4 flex flex-col gap-2">
-        {smartAccountClient && (
+        {smartAccount && (
           <Card>
             <CardHeader className="flex flex-row gap-2">
               <div className="flex-grow">
