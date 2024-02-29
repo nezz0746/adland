@@ -20,7 +20,7 @@ const CounterDisplay = () => {
   return (
     <div className="flex flex-col gap-1 items-center">
       <CardDescription>Value</CardDescription>
-      <p className="text-3xl">{Number(number)}</p>
+      <p className="text-3xl">{number !== undefined ? Number(number) : 0}</p>
     </div>
   );
 };
