@@ -3,8 +3,10 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useState } from "react";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import { useSmartAccount } from "@/lib/pimlico";
 
 const CounterInput = () => {
+  const { smartAccount } = useSmartAccount();
   const { writeCounter, isPending } = useCounter();
   const [numberInputValue, setNumberInputValue] = useState(0);
 
@@ -14,6 +16,8 @@ const CounterInput = () => {
       args: [BigInt(numberInputValue)],
     });
   };
+
+  const ready = smartAccount !== null;
 
   return (
     <div className="flex w-full max-w-sm items-center space-x-2">
@@ -27,7 +31,7 @@ const CounterInput = () => {
           setNumberInputValue(e.target.valueAsNumber);
         }}
       />
-      <Button disabled={isPending} type="submit" onClick={setNumber}>
+      <Button disabled={isPending || !ready} type="submit" onClick={setNumber}>
         {isPending && <ReloadIcon className="w-4 h-4 animate-spin mr-1" />}
         Set Number
       </Button>
