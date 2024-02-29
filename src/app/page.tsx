@@ -2,7 +2,7 @@
 
 import { ConnectButton } from "@/components/connect-button";
 import { Separator } from "@/components/ui/separator";
-import { ReloadIcon, RocketIcon } from "@radix-ui/react-icons";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import { initialChain } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -15,20 +15,27 @@ import {
 } from "@/components/ui/card";
 import { usePimlico } from "@/lib/pimlico";
 import { truncateAddress } from "@/lib/utils";
-import { counterAbi, counterAddress, useReadCounterNumber } from "@/generated";
-import { encodeFunctionData } from "viem";
-import { useWatchContractEvent } from "wagmi";
-import { queryClient } from "./providers";
+import { counterAbi, counterAddress } from "@/generated";
+import { BaseError, UserRejectedRequestError, encodeFunctionData } from "viem";
 import { Input } from "@/components/ui/input";
+import CounterDisplay from "@/components/counter-display";
+import { useState } from "react";
+import { bundler } from "@/lib/pimlico.config";
+import { toast } from "sonner";
 
 export default function Home() {
+  const [sendingTransaction, setSendingTransaction] = useState(false);
   const { smartAccountClient } = usePimlico();
 
   const incrementCounter = async () => {
     try {
       if (!smartAccountClient) return;
 
-      smartAccountClient.sendTransaction({
+      setSendingTransaction(true);
+
+      const { fast } = await bundler.getUserOperationGasPrice();
+
+      await smartAccountClient.sendTransaction({
         to: counterAddress[11155111],
         data: encodeFunctionData({
           abi: counterAbi,
@@ -36,10 +43,18 @@ export default function Home() {
           args: [],
         }),
         value: BigInt(0),
+        maxFeePerGas: fast.maxFeePerGas,
+        maxPriorityFeePerGas: fast.maxPriorityFeePerGas,
       });
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      const error = err as BaseError;
+
+      if (error instanceof UserRejectedRequestError) {
+        toast.error("User rejected request");
+      }
     }
+
+    setSendingTransaction(false);
   };
 
   return (
@@ -81,10 +96,14 @@ export default function Home() {
             <CardContent>
               <div className="flex flex-row justify-between gap-2">
                 <Button
+                  disabled={sendingTransaction}
                   onClick={() => {
                     incrementCounter();
                   }}
                 >
+                  {sendingTransaction && (
+                    <ReloadIcon className="w-4 h-4 animate-spin mr-1" />
+                  )}
                   Increment
                 </Button>
                 <div className="flex w-full max-w-sm items-center space-x-2">
@@ -110,25 +129,3 @@ export default function Home() {
     </>
   );
 }
-
-const CounterDisplay = () => {
-  const { data: number, queryKey } = useReadCounterNumber();
-
-  useWatchContractEvent({
-    abi: counterAbi,
-    address: counterAddress[11155111],
-    eventName: "NumberChanged",
-    onLogs: (logs) => {
-      const newNumber = logs[0].args.newNumber;
-
-      queryClient.setQueryData(queryKey, newNumber);
-    },
-  });
-
-  return (
-    <div className="flex flex-col gap-1 items-center">
-      <CardDescription>Value</CardDescription>
-      <p className="text-3xl">{Number(number)}</p>
-    </div>
-  );
-};
