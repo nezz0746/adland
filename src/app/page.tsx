@@ -14,12 +14,8 @@ import {
 import { getExplorerLink, truncateAddress } from "@/lib/utils";
 import { counterAddress } from "@/generated";
 import CounterDisplay from "@/components/counter-display";
-import CounterInput from "@/components/counter-input";
-import CounterIncrement from "@/components/counter-increment";
-import { useSmartAccount } from "@/lib/pimlico";
 
 export default function Home() {
-  const { smartAccount } = useSmartAccount();
   return (
     <>
       <nav className="p-4 flex flex-row justify-between">
@@ -50,29 +46,10 @@ export default function Home() {
                   )}
                 </Link>
               </CardDescription>
-              <CardDescription className="">
-                Calling with Simple Smart Account @{" "}
-                <Link
-                  target="_blank"
-                  href={getExplorerLink(
-                    initialChain,
-                    smartAccount?.account.address ?? "",
-                    "address"
-                  )}
-                  className="underline"
-                >
-                  {truncateAddress(smartAccount?.account.address)}
-                </Link>
-              </CardDescription>
             </div>
             <CounterDisplay />
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-row justify-between gap-2">
-              <CounterIncrement />
-              <CounterInput />
-            </div>
-          </CardContent>
+          <CardContent></CardContent>
         </Card>
       </main>
     </>
