@@ -1,0 +1,2 @@
+@thirdweb-dev/dynamic-contracts/=lib/contracts/lib/dynamic-contracts/
+@openzeppelin/contracts/=lib/contracts/lib/openzeppelin-contracts/contracts/

@@ -12,10 +12,14 @@ abstract contract BaseScript is Script {
     /// @dev Needed for the deterministic deployments.
     bytes32 internal constant ZERO_SALT = bytes32(0);
 
+    // @dev The chain we are deploying to.
     enum DeployementChain {
         Anvil,
         Sepolia
     }
+
+    // @dev The current chain we are deploying to.
+    DeployementChain internal currentChain;
 
     uint256 internal deployerPrivateKey;
 
@@ -32,12 +36,13 @@ abstract contract BaseScript is Script {
         forks[DeployementChain.Anvil] = "local";
         forks[DeployementChain.Sepolia] = "sepolia";
 
-        deployerPrivateKey = vm.envUint("PK");
-        if (deployerPrivateKey == 0) {
+        if (currentChain == DeployementChain.Anvil) {
             (, deployerPrivateKey) = deriveRememberKey({
                 mnemonic: TEST_MNEMONIC,
                 index: 0
             });
+        } else {
+            deployerPrivateKey = vm.envUint("PK");
         }
     }
 
@@ -49,6 +54,7 @@ abstract contract BaseScript is Script {
 
     modifier broadcastOn(DeployementChain chain) {
         vm.createSelectFork(forks[chain]);
+        currentChain = chain;
         console2.log("Broadcasting on chain: ", forks[chain]);
         vm.startBroadcast(deployerPrivateKey);
         _;

@@ -14,3 +14,4 @@ docs/
 .env
 
 deployments/31337/
+deployments/1337/
