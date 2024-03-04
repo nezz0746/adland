@@ -7,13 +7,13 @@ export default defineConfig(async () => {
 
   return {
     out: "src/generated.ts",
-    contracts: [],
     plugins: [
       foundry({
-        project: "./foundry",
+        artifacts: "./foundry/out",
         deployments,
+        include: ["DirectListingsLogic.sol/*.json"],
       }),
-      react(),
+      react({}),
     ],
   };
 });
