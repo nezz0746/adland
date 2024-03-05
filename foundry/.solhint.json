@@ -1,6 +1,7 @@
 {
   "rules": {
     "no-unused-imports": "off",
-    "custom-errors": "off"
+    "custom-errors": "off",
+    "private-vars-leading-underscore": "off"
   }
 }

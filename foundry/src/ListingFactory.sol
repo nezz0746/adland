@@ -9,6 +9,7 @@ contract AdCommonOwnership is ERC721 {
     IDirectListings marketplace;
 
     struct AdGroup {
+        address beneficiary;
         uint256 startListingId;
         uint256 endListingId;
     }
@@ -55,6 +56,7 @@ contract AdCommonOwnership is ERC721 {
         group++;
 
         adGroups[group] = AdGroup(
+            beneficiary,
             nextStartListingId,
             nextStartListingId + size - 1
         );
