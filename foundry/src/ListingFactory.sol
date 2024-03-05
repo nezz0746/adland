@@ -24,8 +24,16 @@ contract AdCommonOwnership is ERC721 {
     }
 
     function createAdGroup(address beneficiary, uint8 size) public {
-        uint256 startListingId = marketplace.totalListings();
-        for (uint256 i = startListingId; i < startListingId + size; i++) {
+        // We use listingId as tokenId as they are perpetual
+        uint256 nextStartListingId = marketplace.totalListings();
+        for (
+            uint256 i = nextStartListingId;
+            i < nextStartListingId + size;
+            i++
+        ) {
+            // Mint new group token to this contract
+            _mint(address(this), i);
+
             // Create initial listings for the group
             marketplace.createListing(
                 IDirectListings.ListingParameters(
@@ -40,13 +48,16 @@ contract AdCommonOwnership is ERC721 {
                 )
             );
 
-            // We use listingId as tokenId as they are perpetual
-            _safeMint(beneficiary, i);
+            // Transfer the token to the beneficiary
+            _transfer(address(this), beneficiary, i);
         }
 
         group++;
 
-        adGroups[group] = AdGroup(startListingId, startListingId + size - 1);
+        adGroups[group] = AdGroup(
+            nextStartListingId,
+            nextStartListingId + size - 1
+        );
 
         emit AdGroupCreated(group, size);
     }
@@ -60,14 +71,15 @@ contract AdCommonOwnership is ERC721 {
             adGroups[_group].endListingId - adGroups[_group].startListingId + 1;
     }
 
-    function _generateAdId(
-        uint256 _group,
-        uint256 _index
-    ) internal pure returns (uint256) {
-        return (_group << 128) | _index;
+    function isApprovedForAll(
+        address,
+        address operator
+    ) public view override returns (bool) {
+        return operator == address(marketplace);
     }
 
-    /// @dev consider marketplace as operator for all tokens
+    /// @dev for safeTransferFrom() method use on buyListing()
+    /// @dev then _beforeTokenTransfer() will decide if the transfer is allowed
     function _isApprovedOrOwner(
         address spender,
         uint256 tokenId
@@ -85,7 +97,9 @@ contract AdCommonOwnership is ERC721 {
         uint256
     ) internal view override {
         require(
-            from == address(0) || msg.sender == address(marketplace),
+            // Can only transfer from this contract or marketplace
+            (from == address(0) || from == address(this)) ||
+                msg.sender == address(marketplace),
             "NFT: Only marketplace can transfer"
         );
     }
