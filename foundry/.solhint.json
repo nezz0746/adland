@@ -1,5 +1,6 @@
 {
   "rules": {
-    "no-unused-imports": "off"
+    "no-unused-imports": "off",
+    "custom-errors": "off"
   }
 }
