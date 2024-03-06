@@ -84,11 +84,11 @@ contract ListingBase is DSTestFull, IExtension {
         );
         extensionDirectListings.functions[4] = ExtensionFunction(
             DirectListingsLogic.createListing.selector,
-            "createListing((address,uint256,uint256,address,uint256,uint128,uint128,bool))"
+            "createListing((address,uint256,uint256,address,uint256,uint256,uint128,uint128,bool))"
         );
         extensionDirectListings.functions[5] = ExtensionFunction(
             DirectListingsLogic.updateListing.selector,
-            "updateListing(uint256,(address,uint256,uint256,address,uint256,uint128,uint128,bool))"
+            "updateListing(uint256,(address,uint256,uint256,address,uint256,uint256,uint128,uint128,bool))"
         );
         extensionDirectListings.functions[6] = ExtensionFunction(
             DirectListingsLogic.cancelListing.selector,

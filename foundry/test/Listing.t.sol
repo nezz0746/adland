@@ -16,6 +16,7 @@ contract ListingTest is ListingBase {
     AdCommonOwnership public adCommons;
     address internal deployer = vm.addr(420);
     address internal beneficiary = vm.addr(421);
+    uint256 taxRate = 0.05e18;
 
     // Counter public counter;
     function setUp() public {
@@ -49,13 +50,13 @@ contract ListingTest is ListingBase {
 
     function testRevertWhenNotLister() public {
         vm.expectRevert("!LISTER_ROLE");
-        adCommons.createAdGroup(beneficiary, 3);
+        adCommons.createAdGroup(beneficiary, taxRate, 3);
     }
 
     function testCreateAdGroup() public {
         _grantListRole(address(adCommons));
 
-        adCommons.createAdGroup(beneficiary, 3);
+        adCommons.createAdGroup(beneficiary, taxRate, 3);
 
         assertEq(adCommons.getAdGroupSize(1), 3);
     }
@@ -63,7 +64,7 @@ contract ListingTest is ListingBase {
     function testBuyListing() public {
         _grantListRole(address(adCommons));
 
-        adCommons.createAdGroup(beneficiary, 3);
+        adCommons.createAdGroup(beneficiary, taxRate, 3);
 
         address buyer = vm.addr(69);
 
@@ -115,7 +116,7 @@ contract ListingTest is ListingBase {
     function testSelfAssessListingPrice() public {
         _grantListRole(address(adCommons));
 
-        adCommons.createAdGroup(beneficiary, 3);
+        adCommons.createAdGroup(beneficiary, taxRate, 3);
 
         IDirectListings.Listing memory listing = marketplace.getListing(1);
 
@@ -125,6 +126,7 @@ contract ListingTest is ListingBase {
                 listing.tokenId,
                 listing.quantity,
                 listing.currency,
+                listing.taxRate,
                 0.2 ether,
                 listing.startTimestamp,
                 listing.endTimestamp,
@@ -139,6 +141,18 @@ contract ListingTest is ListingBase {
         vm.deal(buyer2, 1 ether);
 
         vm.prank(buyer2);
+        vm.expectRevert(
+            "Marketplace: msg.value must exactly be the total price."
+        );
+        marketplace.buyFromListing{value: 0.1 ether}(
+            1,
+            buyer2,
+            1,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            0.2 ether
+        );
+
+        vm.prank(buyer2);
         marketplace.buyFromListing{value: 0.2 ether}(
             1,
             buyer2,
@@ -147,6 +161,8 @@ contract ListingTest is ListingBase {
             0.2 ether
         );
     }
+
+    function testAddTaxRateToListing() public {}
 
     ////////////////////////// HELPERS //////////////////////////
 

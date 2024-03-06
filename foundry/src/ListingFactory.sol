@@ -24,7 +24,16 @@ contract AdCommonOwnership is ERC721 {
         marketplace = IDirectListings(_marketplace);
     }
 
-    function createAdGroup(address beneficiary, uint8 size) public {
+    /// @notice Create a group of listings and transfer them to a beneficiary
+    /// @param beneficiary The address that will receive the NFTs
+    /// @param taxRate The tax rate for the listings (with 18 decimals, 1e18 = 100%)
+    /// @param size The number of listings to create
+    function createAdGroup(
+        address beneficiary,
+        uint256 taxRate,
+        uint8 size
+    ) public {
+        require(taxRate < 1e18, "NFT: Tax rate must be less than 100%");
         // We use listingId as tokenId as they are perpetual
         uint256 nextStartListingId = marketplace.totalListings();
         for (
@@ -42,6 +51,7 @@ contract AdCommonOwnership is ERC721 {
                     i,
                     1,
                     CurrencyTransferLib.NATIVE_TOKEN,
+                    taxRate,
                     0.1 ether,
                     uint128(block.timestamp),
                     type(uint128).max,
