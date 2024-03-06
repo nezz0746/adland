@@ -135,7 +135,36 @@ contract ListingTest is ListingBase {
         adCommons.safeTransferFrom(buyer2, vm.addr(22), 1);
     }
 
-    function testBuyListinERC20() public {}
+    function testBuyListingERC20() public {
+        _grantListRole(address(adCommons));
+
+        uint256 initialPriceInDai = 100e18; // 100 DAI
+
+        adCommons.createAdGroup(
+            beneficiary,
+            address(dai),
+            initialPriceInDai,
+            taxRate,
+            3
+        );
+
+        address buyer = vm.addr(69);
+        dai.mintTo(buyer, 1000e18);
+
+        assertEq(dai.balanceOf(buyer), 1000e18);
+
+        vm.prank(buyer);
+        dai.approve(address(marketplace), initialPriceInDai);
+
+        vm.prank(buyer);
+        marketplace.buyFromListing(
+            1,
+            buyer,
+            1,
+            address(dai),
+            initialPriceInDai
+        );
+    }
 
     function testSelfAssessListingPrice() public {
         _grantListRole(address(adCommons));
