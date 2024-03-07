@@ -1,56 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.19;
 
 import {console} from "forge-std/Test.sol";
-import {ListingBase} from "./helpers/ListingBase.sol";
+import {ListingBase, ISuperToken, SuperToken} from "./helpers/ListingBase.sol";
 import {WETH9} from "../src/mocks/WETH9.sol";
 import {DirectListingsLogic} from "contracts/prebuilts/marketplace/direct-listings/DirectListingsLogic.sol";
 import {AdCommonOwnership} from "../src/ListingFactory.sol";
 import {MarketplaceV3} from "contracts/prebuilts/marketplace/entrypoint/MarketplaceV3.sol";
 import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {IDirectListings} from "contracts/prebuilts/marketplace/IMarketplace.sol";
-import {MockDAI} from "./mocks/MockDAI.sol";
+import {MockERC20} from "./mocks/MockERC20.sol";
+import {FlowSender} from "./helpers/FlowSender.t.sol";
+import {UD60x18, ud, intoUint256} from "@prb/math/src/UD60x18.sol";
+import {SuperTokenV1Library} from "@superfluid-finance/ethereum-contracts/contracts/apps/SuperTokenV1Library.sol";
 
 contract ListingTest is ListingBase {
-    WETH9 public weth;
-    MockDAI public dai;
-    DirectListingsLogic public marketplace;
-    AdCommonOwnership public adCommons;
-    address internal deployer = vm.addr(420);
-    address internal beneficiary = vm.addr(421);
-    uint256 taxRate = 0.05e18;
-    uint256 initialPrice = 0.1 ether;
-
-    // Counter public counter;
-    function setUp() public {
-        vm.startPrank(deployer);
-        weth = _deployWETH();
-        dai = new MockDAI();
-
-        marketplace = DirectListingsLogic(_deployMarketplace(address(weth)));
-
-        vm.label(address(marketplace), "marketplace");
-
-        adCommons = new AdCommonOwnership(address(marketplace));
-
-        MarketplaceV3(payable(address(marketplace))).revokeRole(
-            keccak256("LISTER_ROLE"),
-            address(0)
-        );
-        MarketplaceV3(payable(address(marketplace))).revokeRole(
-            keccak256("ASSET_ROLE"),
-            address(0)
-        );
-        MarketplaceV3(payable(address(marketplace))).grantRole(
-            keccak256("ASSET_ROLE"),
-            address(adCommons)
-        );
-
-        label(address(adCommons), "adCommons");
-        label(beneficiary, "beneficiary");
-
-        vm.stopPrank();
-    }
+    using SuperTokenV1Library for ISuperToken;
 
     function testRevertWhenNotLister() public {
         vm.expectRevert("!LISTER_ROLE");
@@ -142,26 +107,26 @@ contract ListingTest is ListingBase {
 
         adCommons.createAdGroup(
             beneficiary,
-            address(dai),
+            address(erc20),
             initialPriceInDai,
             taxRate,
             3
         );
 
         address buyer = vm.addr(69);
-        dai.mintTo(buyer, 1000e18);
+        erc20.mintTo(buyer, 1000e18);
 
-        assertEq(dai.balanceOf(buyer), 1000e18);
+        assertEq(erc20.balanceOf(buyer), 1000e18);
 
         vm.prank(buyer);
-        dai.approve(address(marketplace), initialPriceInDai);
+        erc20.approve(address(marketplace), initialPriceInDai);
 
         vm.prank(buyer);
         marketplace.buyFromListing(
             1,
             buyer,
             1,
-            address(dai),
+            address(erc20),
             initialPriceInDai
         );
     }
@@ -223,7 +188,44 @@ contract ListingTest is ListingBase {
         );
     }
 
-    function testAddTaxRateToListing() public {}
+    function testUpgradeAccountDaiToDaiX() public {
+        address account = vm.addr(69);
+
+        FlowSender flowSender = new FlowSender(daix);
+
+        vm.prank(account);
+        flowSender.gainDaiX(1000e18);
+    }
+
+    function testCreateDaiXStream() public {
+        address account = vm.addr(69);
+        address account2 = vm.addr(96);
+
+        uint256 priceOfAsset = 104e18; // 104 DAI
+
+        // 1.2% per week
+        uint256 taxRateBPS = 120;
+
+        uint256 duePerWeek = (priceOfAsset * taxRateBPS) / 10000;
+
+        int96 duePerSecond = int96(int256(duePerWeek / 7 days));
+
+        vm.startPrank(account);
+        dai.mint(account, duePerWeek);
+        dai.approve(address(daix), duePerWeek);
+        daix.upgrade(duePerWeek);
+
+        daix.createFlow(account2, duePerSecond);
+        vm.stopPrank();
+
+        vm.warp(block.timestamp + 7 days + 1);
+        assertEq(daix.balanceOf(account), 0);
+        assertGte(daix.balanceOf(account2), duePerWeek);
+    }
+
+    function testAddTaxRateToListing() public {
+        //
+    }
 
     ////////////////////////// HELPERS //////////////////////////
 

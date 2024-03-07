@@ -8,8 +8,72 @@ import {MarketplaceV3} from "contracts/prebuilts/marketplace/entrypoint/Marketpl
 import {DirectListingsLogic} from "contracts/prebuilts/marketplace/direct-listings/DirectListingsLogic.sol";
 import {WETH9} from "../../src/mocks/WETH9.sol";
 import {DSTestFull} from "./DSTestFull.sol";
+import {ISuperfluid, ISuperToken} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
+import {SuperToken} from "@superfluid-finance/ethereum-contracts/contracts/superfluid/SuperToken.sol";
+import {FlowSender} from "./FlowSender.t.sol";
+import {SuperfluidFrameworkDeployer, SuperfluidFrameworkDeploymentSteps} from "@superfluid-finance/ethereum-contracts/contracts/utils/SuperfluidFrameworkDeployer.sol";
+import {TestToken} from "@superfluid-finance/ethereum-contracts/contracts/utils/TestToken.sol";
+import {MockERC20} from "../mocks/MockERC20.sol";
+import {AdCommonOwnership} from "../../src/ListingFactory.sol";
+import {ERC1820RegistryCompiled} from "@superfluid-finance/ethereum-contracts/contracts/libs/ERC1820RegistryCompiled.sol";
 
 contract ListingBase is DSTestFull, IExtension {
+    SuperfluidFrameworkDeploymentSteps.Framework sf;
+    WETH9 public weth;
+    MockERC20 public erc20;
+    DirectListingsLogic public marketplace;
+    AdCommonOwnership public adCommons;
+    address internal deployer = vm.addr(420);
+    address internal beneficiary = vm.addr(421);
+    uint256 taxRate = 0.05e18;
+    uint256 initialPrice = 0.1 ether;
+    TestToken public dai;
+    ISuperToken public daix;
+
+    function setUp() public {
+        vm.etch(ERC1820RegistryCompiled.at, ERC1820RegistryCompiled.bin);
+
+        SuperfluidFrameworkDeployer sfDeployer = new SuperfluidFrameworkDeployer();
+        sfDeployer.deployTestFramework();
+        sf = sfDeployer.getFramework();
+
+        (dai, daix) = sfDeployer.deployWrapperSuperToken(
+            "Fake DAI",
+            "DAI",
+            18,
+            1000000e18,
+            deployer
+        );
+
+        vm.startPrank(deployer);
+        weth = _deployWETH();
+        erc20 = new MockERC20();
+
+        marketplace = DirectListingsLogic(_deployMarketplace(address(weth)));
+
+        vm.label(address(marketplace), "marketplace");
+
+        adCommons = new AdCommonOwnership(address(marketplace));
+
+        MarketplaceV3(payable(address(marketplace))).revokeRole(
+            keccak256("LISTER_ROLE"),
+            address(0)
+        );
+        MarketplaceV3(payable(address(marketplace))).revokeRole(
+            keccak256("ASSET_ROLE"),
+            address(0)
+        );
+        MarketplaceV3(payable(address(marketplace))).grantRole(
+            keccak256("ASSET_ROLE"),
+            address(adCommons)
+        );
+
+        label(address(adCommons), "adCommons");
+        label(beneficiary, "beneficiary");
+
+        vm.stopPrank();
+    }
+
     function _deployWETH() internal returns (WETH9 weth) {
         weth = new WETH9();
     }

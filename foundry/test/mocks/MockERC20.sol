@@ -3,6 +3,6 @@ pragma solidity ^0.8.13;
 
 import "./MintableERC20.sol";
 
-contract MockDAI is MintableERC20 {
-    constructor() ERC20("DAI", "DAI") {}
+contract MockERC20 is MintableERC20 {
+    constructor() ERC20("ERC20", "ERC20") {}
 }

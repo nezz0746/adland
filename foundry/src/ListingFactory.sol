@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.19;
 
 import {IDirectListings} from "contracts/prebuilts/marketplace/IMarketplace.sol";
 import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
