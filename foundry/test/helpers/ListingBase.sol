@@ -27,7 +27,6 @@ contract ListingBase is DSTestFull, IExtension {
     AdCommonOwnership public adCommons;
     address internal deployer = vm.addr(420);
     address internal beneficiary = vm.addr(421);
-    uint256 taxRateBPS = 120;
     uint256 initialPrice = 0.1 ether;
     TestToken public dai;
     ISuperToken public daix;

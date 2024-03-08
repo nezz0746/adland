@@ -18,6 +18,9 @@ import {TestToken} from "@superfluid-finance/ethereum-contracts/contracts/utils/
 
 contract ListingTest is ListingBase {
     using SuperTokenV1Library for ISuperToken;
+    uint256 constant baseTaxRateBPS = 120; // 1.2% per month
+    uint256 constant MAX_BPS = 10_000;
+    uint256 constant DEFAULT_QUANTITY = 1;
 
     function testRevertWhenNotLister() public {
         vm.expectRevert("!LISTER_ROLE");
@@ -25,7 +28,7 @@ contract ListingTest is ListingBase {
             beneficiary,
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice,
-            taxRateBPS,
+            baseTaxRateBPS,
             3
         );
     }
@@ -37,7 +40,7 @@ contract ListingTest is ListingBase {
             beneficiary,
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice,
-            taxRateBPS,
+            baseTaxRateBPS,
             3
         );
 
@@ -73,7 +76,7 @@ contract ListingTest is ListingBase {
             beneficiary,
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice,
-            taxRateBPS,
+            baseTaxRateBPS,
             3
         );
 
@@ -81,7 +84,26 @@ contract ListingTest is ListingBase {
 
         _grantMaxFlowPermissions(ethx, buyer, address(marketplace));
 
-        _upgradeETH(ethx, buyer, 1 ether);
+        uint256 missingAmount = 1;
+
+        _upgradeETH(
+            ethx,
+            buyer,
+            _taxDuePerWeek(baseTaxRateBPS, initialPrice) - missingAmount
+        );
+
+        vm.prank(buyer);
+        vm.expectRevert("Marketplace: TokenX insufficient balance");
+        marketplace.buyFromListing{value: initialPrice}(
+            1,
+            buyer,
+            DEFAULT_QUANTITY,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            0.1 ether
+        );
+
+        // Add missing amount
+        _upgradeETH(ethx, buyer, missingAmount);
 
         assertEq(adCommons.ownerOf(1), beneficiary);
         assertEq(beneficiary.balance, 0);
@@ -90,7 +112,7 @@ contract ListingTest is ListingBase {
         marketplace.buyFromListing{value: initialPrice}(
             1,
             buyer,
-            1,
+            DEFAULT_QUANTITY,
             CurrencyTransferLib.NATIVE_TOKEN,
             0.1 ether
         );
@@ -115,7 +137,7 @@ contract ListingTest is ListingBase {
         marketplace.buyFromListing{value: initialPrice}(
             1,
             buyer2,
-            1,
+            DEFAULT_QUANTITY,
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice
         );
@@ -130,6 +152,7 @@ contract ListingTest is ListingBase {
         _grantListRole(address(adCommons));
 
         uint256 initialPriceInDai = 100e18; // 100 DAI
+        uint256 taxRateBPS = 120; // 1.2% per month
 
         adCommons.createAdGroup(
             beneficiary,
@@ -171,7 +194,7 @@ contract ListingTest is ListingBase {
             beneficiary,
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice,
-            taxRateBPS,
+            baseTaxRateBPS,
             3
         );
 
@@ -265,6 +288,22 @@ contract ListingTest is ListingBase {
     }
 
     ////////////////////////// HELPERS //////////////////////////
+
+    function _getFlowRate(
+        uint256 taxRateBPS,
+        uint256 price
+    ) internal pure returns (int96) {
+        uint256 duePerWeek = _taxDuePerWeek(taxRateBPS, price);
+
+        return int96(int256(duePerWeek / 7 days));
+    }
+
+    function _taxDuePerWeek(
+        uint256 taxRateBPS,
+        uint256 price
+    ) internal pure returns (uint256) {
+        return (price * taxRateBPS) / MAX_BPS;
+    }
 
     function _getAccount(uint256 pk, uint256 deal) internal returns (address) {
         address tester = vm.addr(pk);

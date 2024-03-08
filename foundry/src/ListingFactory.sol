@@ -6,6 +6,8 @@ import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract AdCommonOwnership is ERC721 {
+    uint256 constant MAX_BPS = 10_000;
+
     IDirectListings marketplace;
 
     struct AdGroup {
@@ -36,7 +38,7 @@ contract AdCommonOwnership is ERC721 {
         uint256 taxRate,
         uint8 size
     ) public {
-        require(taxRate < 1e18, "NFT: Tax rate must be less than 100%");
+        require(taxRate < MAX_BPS, "AdCommonOwnership: Tax rate too high");
         // We use listingId as tokenId as they are perpetual
         uint256 nextStartListingId = marketplace.totalListings();
 
