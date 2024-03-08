@@ -13,8 +13,10 @@ import {SuperToken} from "@superfluid-finance/ethereum-contracts/contracts/super
 import {FlowSender} from "./FlowSender.t.sol";
 import {SuperfluidFrameworkDeployer, SuperfluidFrameworkDeploymentSteps} from "@superfluid-finance/ethereum-contracts/contracts/utils/SuperfluidFrameworkDeployer.sol";
 import {TestToken} from "@superfluid-finance/ethereum-contracts/contracts/utils/TestToken.sol";
+import {ISETH} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/tokens/ISETH.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
 import {AdCommonOwnership} from "../../src/ListingFactory.sol";
+import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {ERC1820RegistryCompiled} from "@superfluid-finance/ethereum-contracts/contracts/libs/ERC1820RegistryCompiled.sol";
 
 contract ListingBase is DSTestFull, IExtension {
@@ -25,10 +27,11 @@ contract ListingBase is DSTestFull, IExtension {
     AdCommonOwnership public adCommons;
     address internal deployer = vm.addr(420);
     address internal beneficiary = vm.addr(421);
-    uint256 taxRate = 0.05e18;
+    uint256 taxRateBPS = 120;
     uint256 initialPrice = 0.1 ether;
     TestToken public dai;
     ISuperToken public daix;
+    ISuperToken public ethx;
 
     function setUp() public {
         vm.etch(ERC1820RegistryCompiled.at, ERC1820RegistryCompiled.bin);
@@ -45,6 +48,7 @@ contract ListingBase is DSTestFull, IExtension {
             deployer
         );
 
+        ethx = sfDeployer.deployNativeAssetSuperToken("Native Ether X", "ETHx");
         vm.startPrank(deployer);
         weth = _deployWETH();
         erc20 = new MockERC20();
@@ -54,6 +58,11 @@ contract ListingBase is DSTestFull, IExtension {
         vm.label(address(marketplace), "marketplace");
 
         adCommons = new AdCommonOwnership(address(marketplace));
+
+        _grantTaxManagerRole(deployer);
+
+        marketplace.setTokenX(CurrencyTransferLib.NATIVE_TOKEN, address(ethx));
+        marketplace.setTokenX(address(dai), address(daix));
 
         MarketplaceV3(payable(address(marketplace))).revokeRole(
             keccak256("LISTER_ROLE"),
@@ -129,7 +138,7 @@ contract ListingBase is DSTestFull, IExtension {
             implementation: directListings
         });
 
-        extensionDirectListings.functions = new ExtensionFunction[](13);
+        extensionDirectListings.functions = new ExtensionFunction[](14);
         extensionDirectListings.functions[0] = ExtensionFunction(
             DirectListingsLogic.totalListings.selector,
             "totalListings()"
@@ -148,11 +157,11 @@ contract ListingBase is DSTestFull, IExtension {
         );
         extensionDirectListings.functions[4] = ExtensionFunction(
             DirectListingsLogic.createListing.selector,
-            "createListing((address,uint256,uint256,address,uint256,uint256,uint128,uint128,bool))"
+            "createListing((address,uint256,uint256,address,uint256,address,uint256,uint128,uint128,bool))"
         );
         extensionDirectListings.functions[5] = ExtensionFunction(
             DirectListingsLogic.updateListing.selector,
-            "updateListing(uint256,(address,uint256,uint256,address,uint256,uint256,uint128,uint128,bool))"
+            "updateListing(uint256,(address,uint256,uint256,address,uint256,address,uint256,uint128,uint128,bool))"
         );
         extensionDirectListings.functions[6] = ExtensionFunction(
             DirectListingsLogic.cancelListing.selector,
@@ -183,6 +192,18 @@ contract ListingBase is DSTestFull, IExtension {
             "getListing(uint256)"
         );
 
+        extensionDirectListings.functions[13] = ExtensionFunction(
+            DirectListingsLogic.setTokenX.selector,
+            "setTokenX(address,address)"
+        );
+
         extensions[0] = extensionDirectListings;
+    }
+
+    function _grantTaxManagerRole(address to) internal {
+        MarketplaceV3(payable(address(marketplace))).grantRole(
+            keccak256("TAX_MANAGER_ROLE"),
+            to
+        );
     }
 }

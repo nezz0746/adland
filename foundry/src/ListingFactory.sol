@@ -9,7 +9,6 @@ contract AdCommonOwnership is ERC721 {
     IDirectListings marketplace;
 
     struct AdGroup {
-        address beneficiary;
         uint256 startListingId;
         uint256 endListingId;
     }
@@ -28,7 +27,7 @@ contract AdCommonOwnership is ERC721 {
     /// @param beneficiary The address that will receive the NFTs
     /// @param currency The currency to use for the listings
     /// @param initialPrice The initial price for the listings
-    /// @param taxRate The tax rate for the listings (with 18 decimals, 1e18 = 100%)
+    /// @param taxRate The tax rate for the listings (in BPS, i.e. 10000 = 100%)
     /// @param size The number of listings to create
     function createAdGroup(
         address beneficiary,
@@ -57,6 +56,7 @@ contract AdCommonOwnership is ERC721 {
                     1,
                     currency,
                     taxRate,
+                    beneficiary,
                     initialPrice,
                     uint128(block.timestamp),
                     type(uint128).max,
@@ -71,7 +71,6 @@ contract AdCommonOwnership is ERC721 {
         group++;
 
         adGroups[group] = AdGroup(
-            beneficiary,
             nextStartListingId,
             nextStartListingId + size - 1
         );
