@@ -99,7 +99,7 @@ contract ListingTest is ListingBase {
             buyer,
             DEFAULT_QUANTITY,
             CurrencyTransferLib.NATIVE_TOKEN,
-            0.1 ether
+            initialPrice
         );
 
         // Add missing amount
@@ -114,8 +114,14 @@ contract ListingTest is ListingBase {
             buyer,
             DEFAULT_QUANTITY,
             CurrencyTransferLib.NATIVE_TOKEN,
-            0.1 ether
+            initialPrice
         );
+
+        _logFlowInfo(buyer, beneficiary);
+
+        vm.warp(block.timestamp + 1 days);
+
+        _logFlowInfo(buyer, beneficiary);
 
         assertEq(beneficiary.balance, initialPrice);
         assertEq(adCommons.ownerOf(1), buyer);
@@ -181,7 +187,7 @@ contract ListingTest is ListingBase {
         marketplace.buyFromListing(
             1,
             buyer,
-            1,
+            DEFAULT_QUANTITY,
             address(dai),
             initialPriceInDai
         );
@@ -223,7 +229,7 @@ contract ListingTest is ListingBase {
 
         _grantMaxFlowPermissions(ethx, buyer2, address(marketplace));
 
-        _upgradeETH(ethx, buyer2, 1 ether);
+        _upgradeETH(ethx, buyer2, _taxDuePerWeek(baseTaxRateBPS, newPrice));
 
         vm.prank(buyer2);
         vm.expectRevert(
@@ -232,7 +238,7 @@ contract ListingTest is ListingBase {
         marketplace.buyFromListing{value: initialPrice}(
             1,
             buyer2,
-            1,
+            DEFAULT_QUANTITY,
             CurrencyTransferLib.NATIVE_TOKEN,
             newPrice
         );
@@ -241,7 +247,7 @@ contract ListingTest is ListingBase {
         marketplace.buyFromListing{value: newPrice}(
             1,
             buyer2,
-            1,
+            DEFAULT_QUANTITY,
             CurrencyTransferLib.NATIVE_TOKEN,
             newPrice
         );
@@ -288,6 +294,21 @@ contract ListingTest is ListingBase {
     }
 
     ////////////////////////// HELPERS //////////////////////////
+
+    function _logFlowInfo(address sender, address receiver) internal view {
+        (
+            uint256 timestamp,
+            int96 flowRate,
+            uint256 deposit,
+            uint256 owedDeposit
+        ) = sf.cfa.getFlow(ethx, sender, receiver);
+
+        console.log("balanceOfReceiver    :", ethx.balanceOf(receiver));
+        console.log("flowRate             :", uint256(int256(flowRate)));
+        console.log("deposit              :", deposit);
+        console.log("owedDeposit          :", owedDeposit);
+        console.log("timestamp            :", timestamp);
+    }
 
     function _getFlowRate(
         uint256 taxRateBPS,
