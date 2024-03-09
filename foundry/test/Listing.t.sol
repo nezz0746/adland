@@ -153,6 +153,14 @@ contract ListingTest is ListingBase {
 
         // Expect flow for buyer to be stopped
         assertEq(flowRate, 0);
+
+        // Test Buyer 2 can set ad uri
+        vm.prank(buyer);
+        vm.expectRevert("AdCommonOwnership: Not owner");
+        adCommons.setAdUri(1, "https://www.google.com");
+
+        vm.prank(buyer2);
+        adCommons.setAdUri(1, "https://www.google.com");
     }
 
     function testBuyListingDAI() public {

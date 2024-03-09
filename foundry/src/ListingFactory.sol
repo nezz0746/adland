@@ -19,7 +19,11 @@ contract AdCommonOwnership is ERC721 {
 
     mapping(uint256 => AdGroup) adGroups;
 
+    mapping(uint256 => string) adUris;
+
     event AdGroupCreated(uint256 group, uint8 size);
+
+    event AdUriSet(uint256 listingId, string uri);
 
     constructor(address _marketplace) ERC721("AdCommonOwnership", "ACO") {
         marketplace = IDirectListings(_marketplace);
@@ -80,10 +84,36 @@ contract AdCommonOwnership is ERC721 {
         emit AdGroupCreated(group, size);
     }
 
+    /**
+     * @dev Sets the advertisement URI for a given listing.
+     * @param listingId The ID of the listing.
+     * @param uri The URI of the advertisement.
+     * @notice Only the owner of the listing can set the advertisement URI.
+     */
+    function setAdUri(uint256 listingId, string memory uri) public {
+        require(
+            ownerOf(listingId) == msg.sender,
+            "AdCommonOwnership: Not owner"
+        );
+        adUris[listingId] = uri;
+
+        emit AdUriSet(listingId, uri);
+    }
+
+    /**
+     * @dev Retrieves the AdGroup struct at the specified index.
+     * @param _group The index of the AdGroup to retrieve.
+     * @return The AdGroup struct at the specified index.
+     */
     function getAdGroup(uint256 _group) public view returns (AdGroup memory) {
         return adGroups[_group];
     }
 
+    /**
+     * @dev Returns the size of an ad group.
+     * @param _group The index of the ad group.
+     * @return The size of the ad group.
+     */
     function getAdGroupSize(uint256 _group) public view returns (uint256) {
         return
             adGroups[_group].endListingId - adGroups[_group].startListingId + 1;
