@@ -35,15 +35,6 @@ abstract contract BaseScript is Script {
     constructor() {
         forks[DeployementChain.Anvil] = "local";
         forks[DeployementChain.Sepolia] = "sepolia";
-
-        if (currentChain == DeployementChain.Anvil) {
-            (, deployerPrivateKey) = deriveRememberKey({
-                mnemonic: TEST_MNEMONIC,
-                index: 0
-            });
-        } else {
-            deployerPrivateKey = vm.envUint("PK");
-        }
     }
 
     modifier broadcast() {
@@ -55,8 +46,10 @@ abstract contract BaseScript is Script {
     modifier broadcastOn(DeployementChain chain) {
         vm.createSelectFork(forks[chain]);
         currentChain = chain;
+        _loadSender();
         console2.log("Broadcasting on chain: ", forks[chain]);
         vm.startBroadcast(deployerPrivateKey);
+        console2.log("SENDER: ", msg.sender);
         _;
         vm.stopBroadcast();
     }
@@ -82,5 +75,19 @@ abstract contract BaseScript is Script {
         json = vm.serializeUint(objectName, "startBlock", block.number);
 
         vm.writeFile(filePathWithEncodePacked, json);
+    }
+
+    function _loadSender() internal {
+        if (currentChain == DeployementChain.Anvil) {
+            (, deployerPrivateKey) = deriveRememberKey({
+                mnemonic: TEST_MNEMONIC,
+                index: 0
+            });
+        } else {
+            console2.log("Using $PK");
+            console2.log("SENDER", msg.sender);
+            deployerPrivateKey = vm.envUint("PK");
+            console2.log("SENDER", msg.sender);
+        }
     }
 }

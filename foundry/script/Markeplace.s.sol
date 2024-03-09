@@ -5,24 +5,79 @@ import {console} from "forge-std/Script.sol";
 import {WETH9} from "../src/mocks/WETH9.sol";
 import {BaseScript} from "./Base.s.sol";
 import {TWProxy} from "contracts/infra/TWProxy.sol";
+import {AdCommonOwnership} from "../src/ListingFactory.sol";
 import {MarketplaceV3} from "contracts/prebuilts/marketplace/entrypoint/MarketplaceV3.sol";
 import {DirectListingsLogic} from "contracts/prebuilts/marketplace/direct-listings/DirectListingsLogic.sol";
 import "@thirdweb-dev/dynamic-contracts/src/interface/IExtension.sol";
+import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
+import {TestToken} from "@superfluid-finance/ethereum-contracts/contracts/utils/TestToken.sol";
+import {ISuperfluid, ISuperToken} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
 
 contract MarketplaceScript is BaseScript, IExtension {
     /// @dev utils
     WETH9 public weth;
+    address wethSepolia = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9;
+    address daixSepolia = 0x9Ce2062b085A2268E8d769fFC040f6692315fd2c;
+    address ethXSepolia = 0x30a6933Ca9230361972E413a15dC8114c952414e;
+    address cfav1Sepolia = 0x6836F23d6171D74Ef62FcF776655aBcD2bcd62Ef;
 
     function deployLocal() public broadcastOn(DeployementChain.Anvil) {
         weth = new WETH9();
 
-        DirectListingsLogic marketplace = _deployMarketplace();
+        (, address deployer, ) = vm.readCallers();
+
+        DirectListingsLogic marketplace = _deployMarketplace(deployer);
 
         _saveDeployment(address(marketplace), "DirectListingsLogic");
     }
 
-    function _deployMarketplace() public returns (DirectListingsLogic) {
-        address marketplaceDeployer = msg.sender;
+    function deploySepolia() public broadcastOn(DeployementChain.Sepolia) {
+        weth = WETH9(payable(wethSepolia));
+
+        (, address deployer, ) = vm.readCallers();
+
+        DirectListingsLogic marketplace = _deployMarketplace(deployer);
+
+        _saveDeployment(address(marketplace), "DirectListingsLogic");
+
+        AdCommonOwnership adCommons = new AdCommonOwnership(
+            address(marketplace)
+        );
+
+        _saveDeployment(address(adCommons), "AdCommonOwnership");
+
+        console.log("Sender:grantRoleTo: ", deployer);
+        _grantTaxManagerRole(address(marketplace), deployer);
+
+        ISuperToken daix = ISuperToken(daixSepolia);
+        TestToken dai = TestToken(daix.getUnderlyingToken());
+        ISuperToken ethx = ISuperToken(ethXSepolia);
+
+        marketplace.setTokenX(CurrencyTransferLib.NATIVE_TOKEN, address(ethx));
+        marketplace.setTokenX(address(dai), address(daix));
+
+        MarketplaceV3(payable(address(marketplace))).revokeRole(
+            keccak256("LISTER_ROLE"),
+            address(0)
+        );
+        MarketplaceV3(payable(address(marketplace))).grantRole(
+            keccak256("LISTER_ROLE"),
+            address(adCommons)
+        );
+
+        MarketplaceV3(payable(address(marketplace))).revokeRole(
+            keccak256("ASSET_ROLE"),
+            address(0)
+        );
+        MarketplaceV3(payable(address(marketplace))).grantRole(
+            keccak256("ASSET_ROLE"),
+            address(adCommons)
+        );
+    }
+
+    function _deployMarketplace(
+        address deployer
+    ) public returns (DirectListingsLogic) {
         Extension[] memory extensions = _setupExtensions();
 
         address impl = address(
@@ -40,13 +95,7 @@ contract MarketplaceScript is BaseScript, IExtension {
                 impl,
                 abi.encodeCall(
                     MarketplaceV3.initialize,
-                    (
-                        marketplaceDeployer,
-                        "",
-                        new address[](0),
-                        marketplaceDeployer,
-                        0
-                    )
+                    (deployer, "", new address[](0), deployer, 0)
                 )
             )
         );
@@ -133,5 +182,12 @@ contract MarketplaceScript is BaseScript, IExtension {
         );
 
         extensions[0] = extensionDirectListings;
+    }
+
+    function _grantTaxManagerRole(address marketplace, address to) internal {
+        MarketplaceV3(payable(marketplace)).grantRole(
+            keccak256("TAX_MANAGER_ROLE"),
+            to
+        );
     }
 }
