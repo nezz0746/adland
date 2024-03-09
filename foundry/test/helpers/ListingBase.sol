@@ -13,6 +13,7 @@ import {SuperToken} from "@superfluid-finance/ethereum-contracts/contracts/super
 import {FlowSender} from "./FlowSender.t.sol";
 import {SuperfluidFrameworkDeployer, SuperfluidFrameworkDeploymentSteps} from "@superfluid-finance/ethereum-contracts/contracts/utils/SuperfluidFrameworkDeployer.sol";
 import {TestToken} from "@superfluid-finance/ethereum-contracts/contracts/utils/TestToken.sol";
+import {ConstantFlowAgreementV1} from "@superfluid-finance/ethereum-contracts/contracts/agreements/ConstantFlowAgreementV1.sol";
 import {ISETH} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/tokens/ISETH.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
 import {AdCommonOwnership} from "../../src/ListingFactory.sol";
@@ -20,37 +21,33 @@ import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {ERC1820RegistryCompiled} from "@superfluid-finance/ethereum-contracts/contracts/libs/ERC1820RegistryCompiled.sol";
 
 contract ListingBase is DSTestFull, IExtension {
+    address wethSepolia = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9;
+    address cfav1Sepolia = 0x6836F23d6171D74Ef62FcF776655aBcD2bcd62Ef;
+    address daixSepolia = 0x9Ce2062b085A2268E8d769fFC040f6692315fd2c;
+    address ethXSepolia = 0x30a6933Ca9230361972E413a15dC8114c952414e;
+
     SuperfluidFrameworkDeploymentSteps.Framework sf;
     WETH9 public weth;
-    MockERC20 public erc20;
     DirectListingsLogic public marketplace;
     AdCommonOwnership public adCommons;
     address internal deployer = vm.addr(420);
     address internal beneficiary = vm.addr(421);
     uint256 initialPrice = 0.1 ether;
+
     TestToken public dai;
     ISuperToken public daix;
     ISuperToken public ethx;
+    ConstantFlowAgreementV1 public cfa;
 
     function setUp() public {
         vm.etch(ERC1820RegistryCompiled.at, ERC1820RegistryCompiled.bin);
 
-        SuperfluidFrameworkDeployer sfDeployer = new SuperfluidFrameworkDeployer();
-        sfDeployer.deployTestFramework();
-        sf = sfDeployer.getFramework();
+        vm.createSelectFork("sepolia");
 
-        (dai, daix) = sfDeployer.deployWrapperSuperToken(
-            "Fake DAI",
-            "DAI",
-            18,
-            1000000e18,
-            deployer
-        );
+        _deployWETH();
+        _deployStreamingUtils();
 
-        ethx = sfDeployer.deployNativeAssetSuperToken("Native Ether X", "ETHx");
         vm.startPrank(deployer);
-        weth = _deployWETH();
-        erc20 = new MockERC20();
 
         marketplace = DirectListingsLogic(_deployMarketplace(address(weth)));
 
@@ -67,6 +64,11 @@ contract ListingBase is DSTestFull, IExtension {
             keccak256("LISTER_ROLE"),
             address(0)
         );
+        MarketplaceV3(payable(address(marketplace))).grantRole(
+            keccak256("LISTER_ROLE"),
+            address(adCommons)
+        );
+
         MarketplaceV3(payable(address(marketplace))).revokeRole(
             keccak256("ASSET_ROLE"),
             address(0)
@@ -82,8 +84,38 @@ contract ListingBase is DSTestFull, IExtension {
         vm.stopPrank();
     }
 
-    function _deployWETH() internal returns (WETH9 weth) {
-        weth = new WETH9();
+    function _deployWETH() internal {
+        if (block.chainid == 11155111) {
+            weth = WETH9(payable(wethSepolia));
+        } else {
+            weth = new WETH9();
+        }
+    }
+
+    function _deployStreamingUtils() internal {
+        if (block.chainid == 11155111) {
+            cfa = ConstantFlowAgreementV1(cfav1Sepolia);
+            daix = ISuperToken(daixSepolia);
+            dai = TestToken(daix.getUnderlyingToken());
+            ethx = ISuperToken(ethXSepolia);
+        } else {
+            SuperfluidFrameworkDeployer sfDeployer = new SuperfluidFrameworkDeployer();
+            sfDeployer.deployTestFramework();
+            sf = sfDeployer.getFramework();
+
+            (dai, daix) = sfDeployer.deployWrapperSuperToken(
+                "Fake DAI",
+                "DAI",
+                18,
+                1000000e18,
+                deployer
+            );
+
+            ethx = sfDeployer.deployNativeAssetSuperToken(
+                "Native Ether X",
+                "ETHx"
+            );
+        }
     }
 
     function _deployMarketplace(

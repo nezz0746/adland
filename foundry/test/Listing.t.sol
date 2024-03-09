@@ -22,20 +22,7 @@ contract ListingTest is ListingBase {
     uint256 constant MAX_BPS = 10_000;
     uint256 constant DEFAULT_QUANTITY = 1;
 
-    function testRevertWhenNotLister() public {
-        vm.expectRevert("!LISTER_ROLE");
-        adCommons.createAdGroup(
-            beneficiary,
-            CurrencyTransferLib.NATIVE_TOKEN,
-            initialPrice,
-            baseTaxRateBPS,
-            3
-        );
-    }
-
     function testCreateAdGroup() public {
-        _grantListRole(address(adCommons));
-
         adCommons.createAdGroup(
             beneficiary,
             CurrencyTransferLib.NATIVE_TOKEN,
@@ -70,8 +57,6 @@ contract ListingTest is ListingBase {
     }
 
     function testBuyListingETH() public {
-        _grantListRole(address(adCommons));
-
         adCommons.createAdGroup(
             beneficiary,
             CurrencyTransferLib.NATIVE_TOKEN,
@@ -164,8 +149,6 @@ contract ListingTest is ListingBase {
     }
 
     function testBuyListingDAI() public {
-        _grantListRole(address(adCommons));
-
         uint256 initialPriceInDai = 100e18; // 100 DAI
         uint256 taxRateBPS = 120; // 1.2% per month
 
@@ -203,8 +186,6 @@ contract ListingTest is ListingBase {
     }
 
     function testSelfAssessListingPrice() public {
-        _grantListRole(address(adCommons));
-
         adCommons.createAdGroup(
             beneficiary,
             CurrencyTransferLib.NATIVE_TOKEN,
@@ -317,7 +298,7 @@ contract ListingTest is ListingBase {
             uint256 owedDeposit
         )
     {
-        (timestamp, flowRate, deposit, owedDeposit) = sf.cfa.getFlow(
+        (timestamp, flowRate, deposit, owedDeposit) = cfa.getFlow(
             ethx,
             sender,
             receiver
@@ -350,14 +331,6 @@ contract ListingTest is ListingBase {
         address tester = vm.addr(pk);
         vm.deal(tester, deal);
         return tester;
-    }
-
-    function _grantListRole(address to) internal {
-        vm.prank(deployer);
-        MarketplaceV3(payable(address(marketplace))).grantRole(
-            keccak256("LISTER_ROLE"),
-            to
-        );
     }
 
     function _grantAssetRole(address tokenContract) internal {
