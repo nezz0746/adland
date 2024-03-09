@@ -30,5 +30,7 @@ export const getFoundryDeployments = async () => {
     }
   }
 
+  console.log(deployments);
+
   return deployments;
 };

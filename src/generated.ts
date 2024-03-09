@@ -3,887 +3,1658 @@ import {
   createUseWriteContract,
   createUseSimulateContract,
   createUseWatchContractEvent,
-} from "wagmi/codegen";
+} from 'wagmi/codegen'
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AdCommonOwnership
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const adCommonOwnershipAbi = [
+  {
+    type: 'constructor',
+    inputs: [
+      { name: '_marketplace', internalType: 'address', type: 'address' },
+    ],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'to', internalType: 'address', type: 'address' },
+      { name: 'tokenId', internalType: 'uint256', type: 'uint256' },
+    ],
+    name: 'approve',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'owner', internalType: 'address', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'beneficiary', internalType: 'address', type: 'address' },
+      { name: 'currency', internalType: 'address', type: 'address' },
+      { name: 'initialPrice', internalType: 'uint256', type: 'uint256' },
+      { name: 'taxRate', internalType: 'uint256', type: 'uint256' },
+      { name: 'size', internalType: 'uint8', type: 'uint8' },
+    ],
+    name: 'createAdGroup',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: '_group', internalType: 'uint256', type: 'uint256' }],
+    name: 'getAdGroup',
+    outputs: [
+      {
+        name: '',
+        internalType: 'struct AdCommonOwnership.AdGroup',
+        type: 'tuple',
+        components: [
+          { name: 'startListingId', internalType: 'uint256', type: 'uint256' },
+          { name: 'endListingId', internalType: 'uint256', type: 'uint256' },
+        ],
+      },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: '_group', internalType: 'uint256', type: 'uint256' }],
+    name: 'getAdGroupSize',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'tokenId', internalType: 'uint256', type: 'uint256' }],
+    name: 'getApproved',
+    outputs: [{ name: '', internalType: 'address', type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'group',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: '', internalType: 'address', type: 'address' },
+      { name: 'operator', internalType: 'address', type: 'address' },
+    ],
+    name: 'isApprovedForAll',
+    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'name',
+    outputs: [{ name: '', internalType: 'string', type: 'string' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'tokenId', internalType: 'uint256', type: 'uint256' }],
+    name: 'ownerOf',
+    outputs: [{ name: '', internalType: 'address', type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'from', internalType: 'address', type: 'address' },
+      { name: 'to', internalType: 'address', type: 'address' },
+      { name: 'tokenId', internalType: 'uint256', type: 'uint256' },
+    ],
+    name: 'safeTransferFrom',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'from', internalType: 'address', type: 'address' },
+      { name: 'to', internalType: 'address', type: 'address' },
+      { name: 'tokenId', internalType: 'uint256', type: 'uint256' },
+      { name: 'data', internalType: 'bytes', type: 'bytes' },
+    ],
+    name: 'safeTransferFrom',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'listingId', internalType: 'uint256', type: 'uint256' },
+      { name: 'uri', internalType: 'string', type: 'string' },
+    ],
+    name: 'setAdUri',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'operator', internalType: 'address', type: 'address' },
+      { name: 'approved', internalType: 'bool', type: 'bool' },
+    ],
+    name: 'setApprovalForAll',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'interfaceId', internalType: 'bytes4', type: 'bytes4' }],
+    name: 'supportsInterface',
+    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'symbol',
+    outputs: [{ name: '', internalType: 'string', type: 'string' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'tokenId', internalType: 'uint256', type: 'uint256' }],
+    name: 'tokenURI',
+    outputs: [{ name: '', internalType: 'string', type: 'string' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'from', internalType: 'address', type: 'address' },
+      { name: 'to', internalType: 'address', type: 'address' },
+      { name: 'tokenId', internalType: 'uint256', type: 'uint256' },
+    ],
+    name: 'transferFrom',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'group',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+      { name: 'size', internalType: 'uint8', type: 'uint8', indexed: false },
+    ],
+    name: 'AdGroupCreated',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'listingId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+      { name: 'uri', internalType: 'string', type: 'string', indexed: false },
+    ],
+    name: 'AdUriSet',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'owner',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'approved',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'tokenId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+    ],
+    name: 'Approval',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'owner',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'operator',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      { name: 'approved', internalType: 'bool', type: 'bool', indexed: false },
+    ],
+    name: 'ApprovalForAll',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      { name: 'from', internalType: 'address', type: 'address', indexed: true },
+      { name: 'to', internalType: 'address', type: 'address', indexed: true },
+      {
+        name: 'tokenId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+    ],
+    name: 'Transfer',
+  },
+] as const
+
+/**
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const adCommonOwnershipAddress = {
+  11155111: '0xF8003FF87Fc0bCE925A67B0061d1737de0260746',
+} as const
+
+/**
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const adCommonOwnershipConfig = {
+  address: adCommonOwnershipAddress,
+  abi: adCommonOwnershipAbi,
+} as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DirectListingsLogic
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const directListingsLogicAbi = [
   {
-    type: "constructor",
+    type: 'constructor',
     inputs: [
-      { name: "_nativeTokenWrapper", internalType: "address", type: "address" },
+      { name: '_nativeTokenWrapper', internalType: 'address', type: 'address' },
     ],
-    stateMutability: "nonpayable",
+    stateMutability: 'nonpayable',
   },
   {
-    type: "function",
+    type: 'function',
     inputs: [],
-    name: "_msgData",
-    outputs: [{ name: "", internalType: "bytes", type: "bytes" }],
-    stateMutability: "view",
+    name: '_msgData',
+    outputs: [{ name: '', internalType: 'bytes', type: 'bytes' }],
+    stateMutability: 'view',
   },
   {
-    type: "function",
+    type: 'function',
     inputs: [],
-    name: "_msgSender",
-    outputs: [{ name: "sender", internalType: "address", type: "address" }],
-    stateMutability: "view",
+    name: '_msgSender',
+    outputs: [{ name: 'sender', internalType: 'address', type: 'address' }],
+    stateMutability: 'view',
   },
   {
-    type: "function",
+    type: 'function',
     inputs: [
-      { name: "_listingId", internalType: "uint256", type: "uint256" },
-      { name: "_buyer", internalType: "address", type: "address" },
-      { name: "_toApprove", internalType: "bool", type: "bool" },
+      { name: '_listingId', internalType: 'uint256', type: 'uint256' },
+      { name: '_buyer', internalType: 'address', type: 'address' },
+      { name: '_toApprove', internalType: 'bool', type: 'bool' },
     ],
-    name: "approveBuyerForListing",
+    name: 'approveBuyerForListing',
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: 'nonpayable',
   },
   {
-    type: "function",
+    type: 'function',
     inputs: [
-      { name: "_listingId", internalType: "uint256", type: "uint256" },
-      { name: "_currency", internalType: "address", type: "address" },
+      { name: '_listingId', internalType: 'uint256', type: 'uint256' },
+      { name: '_currency', internalType: 'address', type: 'address' },
       {
-        name: "_pricePerTokenInCurrency",
-        internalType: "uint256",
-        type: "uint256",
+        name: '_pricePerTokenInCurrency',
+        internalType: 'uint256',
+        type: 'uint256',
       },
     ],
-    name: "approveCurrencyForListing",
+    name: 'approveCurrencyForListing',
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: 'nonpayable',
   },
   {
-    type: "function",
+    type: 'function',
     inputs: [
-      { name: "_listingId", internalType: "uint256", type: "uint256" },
-      { name: "_buyFor", internalType: "address", type: "address" },
-      { name: "_quantity", internalType: "uint256", type: "uint256" },
-      { name: "_currency", internalType: "address", type: "address" },
-      { name: "_expectedTotalPrice", internalType: "uint256", type: "uint256" },
+      { name: '_listingId', internalType: 'uint256', type: 'uint256' },
+      { name: '_buyFor', internalType: 'address', type: 'address' },
+      { name: '_quantity', internalType: 'uint256', type: 'uint256' },
+      { name: '_currency', internalType: 'address', type: 'address' },
+      { name: '_expectedTotalPrice', internalType: 'uint256', type: 'uint256' },
     ],
-    name: "buyFromListing",
+    name: 'buyFromListing',
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: 'payable',
   },
   {
-    type: "function",
-    inputs: [{ name: "_listingId", internalType: "uint256", type: "uint256" }],
-    name: "cancelListing",
+    type: 'function',
+    inputs: [{ name: '_listingId', internalType: 'uint256', type: 'uint256' }],
+    name: 'cancelListing',
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: 'nonpayable',
   },
   {
-    type: "function",
+    type: 'function',
     inputs: [
       {
-        name: "_params",
-        internalType: "struct IDirectListings.ListingParameters",
-        type: "tuple",
+        name: '_params',
+        internalType: 'struct IDirectListings.ListingParameters',
+        type: 'tuple',
         components: [
-          { name: "assetContract", internalType: "address", type: "address" },
-          { name: "tokenId", internalType: "uint256", type: "uint256" },
-          { name: "quantity", internalType: "uint256", type: "uint256" },
-          { name: "currency", internalType: "address", type: "address" },
-          { name: "pricePerToken", internalType: "uint256", type: "uint256" },
-          { name: "startTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "endTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "reserved", internalType: "bool", type: "bool" },
+          { name: 'assetContract', internalType: 'address', type: 'address' },
+          { name: 'tokenId', internalType: 'uint256', type: 'uint256' },
+          { name: 'quantity', internalType: 'uint256', type: 'uint256' },
+          { name: 'currency', internalType: 'address', type: 'address' },
+          { name: 'taxRate', internalType: 'uint256', type: 'uint256' },
+          { name: 'taxBeneficiary', internalType: 'address', type: 'address' },
+          { name: 'pricePerToken', internalType: 'uint256', type: 'uint256' },
+          { name: 'startTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'endTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'reserved', internalType: 'bool', type: 'bool' },
         ],
       },
     ],
-    name: "createListing",
-    outputs: [{ name: "listingId", internalType: "uint256", type: "uint256" }],
-    stateMutability: "nonpayable",
+    name: 'createListing',
+    outputs: [{ name: 'listingId', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'nonpayable',
   },
   {
-    type: "function",
+    type: 'function',
     inputs: [
-      { name: "_listingId", internalType: "uint256", type: "uint256" },
-      { name: "_currency", internalType: "address", type: "address" },
+      { name: '_listingId', internalType: 'uint256', type: 'uint256' },
+      { name: '_currency', internalType: 'address', type: 'address' },
     ],
-    name: "currencyPriceForListing",
-    outputs: [{ name: "", internalType: "uint256", type: "uint256" }],
-    stateMutability: "view",
+    name: 'currencyPriceForListing',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
   },
   {
-    type: "function",
+    type: 'function',
     inputs: [
-      { name: "_startId", internalType: "uint256", type: "uint256" },
-      { name: "_endId", internalType: "uint256", type: "uint256" },
+      { name: '_startId', internalType: 'uint256', type: 'uint256' },
+      { name: '_endId', internalType: 'uint256', type: 'uint256' },
     ],
-    name: "getAllListings",
+    name: 'getAllListings',
     outputs: [
       {
-        name: "_allListings",
-        internalType: "struct IDirectListings.Listing[]",
-        type: "tuple[]",
+        name: '_allListings',
+        internalType: 'struct IDirectListings.Listing[]',
+        type: 'tuple[]',
         components: [
-          { name: "listingId", internalType: "uint256", type: "uint256" },
-          { name: "tokenId", internalType: "uint256", type: "uint256" },
-          { name: "quantity", internalType: "uint256", type: "uint256" },
-          { name: "pricePerToken", internalType: "uint256", type: "uint256" },
-          { name: "startTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "endTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "listingCreator", internalType: "address", type: "address" },
-          { name: "assetContract", internalType: "address", type: "address" },
-          { name: "currency", internalType: "address", type: "address" },
+          { name: 'listingId', internalType: 'uint256', type: 'uint256' },
+          { name: 'tokenId', internalType: 'uint256', type: 'uint256' },
+          { name: 'quantity', internalType: 'uint256', type: 'uint256' },
+          { name: 'pricePerToken', internalType: 'uint256', type: 'uint256' },
+          { name: 'startTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'endTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'listingCreator', internalType: 'address', type: 'address' },
+          { name: 'assetContract', internalType: 'address', type: 'address' },
+          { name: 'currency', internalType: 'address', type: 'address' },
+          { name: 'taxRate', internalType: 'uint256', type: 'uint256' },
+          { name: 'taxBeneficiary', internalType: 'address', type: 'address' },
           {
-            name: "tokenType",
-            internalType: "enum IDirectListings.TokenType",
-            type: "uint8",
+            name: 'tokenType',
+            internalType: 'enum IDirectListings.TokenType',
+            type: 'uint8',
           },
           {
-            name: "status",
-            internalType: "enum IDirectListings.Status",
-            type: "uint8",
+            name: 'status',
+            internalType: 'enum IDirectListings.Status',
+            type: 'uint8',
           },
-          { name: "reserved", internalType: "bool", type: "bool" },
+          { name: 'reserved', internalType: 'bool', type: 'bool' },
         ],
       },
     ],
-    stateMutability: "view",
+    stateMutability: 'view',
   },
   {
-    type: "function",
+    type: 'function',
     inputs: [
-      { name: "_startId", internalType: "uint256", type: "uint256" },
-      { name: "_endId", internalType: "uint256", type: "uint256" },
+      { name: '_startId', internalType: 'uint256', type: 'uint256' },
+      { name: '_endId', internalType: 'uint256', type: 'uint256' },
     ],
-    name: "getAllValidListings",
+    name: 'getAllValidListings',
     outputs: [
       {
-        name: "_validListings",
-        internalType: "struct IDirectListings.Listing[]",
-        type: "tuple[]",
+        name: '_validListings',
+        internalType: 'struct IDirectListings.Listing[]',
+        type: 'tuple[]',
         components: [
-          { name: "listingId", internalType: "uint256", type: "uint256" },
-          { name: "tokenId", internalType: "uint256", type: "uint256" },
-          { name: "quantity", internalType: "uint256", type: "uint256" },
-          { name: "pricePerToken", internalType: "uint256", type: "uint256" },
-          { name: "startTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "endTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "listingCreator", internalType: "address", type: "address" },
-          { name: "assetContract", internalType: "address", type: "address" },
-          { name: "currency", internalType: "address", type: "address" },
+          { name: 'listingId', internalType: 'uint256', type: 'uint256' },
+          { name: 'tokenId', internalType: 'uint256', type: 'uint256' },
+          { name: 'quantity', internalType: 'uint256', type: 'uint256' },
+          { name: 'pricePerToken', internalType: 'uint256', type: 'uint256' },
+          { name: 'startTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'endTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'listingCreator', internalType: 'address', type: 'address' },
+          { name: 'assetContract', internalType: 'address', type: 'address' },
+          { name: 'currency', internalType: 'address', type: 'address' },
+          { name: 'taxRate', internalType: 'uint256', type: 'uint256' },
+          { name: 'taxBeneficiary', internalType: 'address', type: 'address' },
           {
-            name: "tokenType",
-            internalType: "enum IDirectListings.TokenType",
-            type: "uint8",
+            name: 'tokenType',
+            internalType: 'enum IDirectListings.TokenType',
+            type: 'uint8',
           },
           {
-            name: "status",
-            internalType: "enum IDirectListings.Status",
-            type: "uint8",
+            name: 'status',
+            internalType: 'enum IDirectListings.Status',
+            type: 'uint8',
           },
-          { name: "reserved", internalType: "bool", type: "bool" },
+          { name: 'reserved', internalType: 'bool', type: 'bool' },
         ],
       },
     ],
-    stateMutability: "view",
+    stateMutability: 'view',
   },
   {
-    type: "function",
-    inputs: [{ name: "_listingId", internalType: "uint256", type: "uint256" }],
-    name: "getListing",
+    type: 'function',
+    inputs: [{ name: '_listingId', internalType: 'uint256', type: 'uint256' }],
+    name: 'getListing',
     outputs: [
       {
-        name: "listing",
-        internalType: "struct IDirectListings.Listing",
-        type: "tuple",
+        name: 'listing',
+        internalType: 'struct IDirectListings.Listing',
+        type: 'tuple',
         components: [
-          { name: "listingId", internalType: "uint256", type: "uint256" },
-          { name: "tokenId", internalType: "uint256", type: "uint256" },
-          { name: "quantity", internalType: "uint256", type: "uint256" },
-          { name: "pricePerToken", internalType: "uint256", type: "uint256" },
-          { name: "startTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "endTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "listingCreator", internalType: "address", type: "address" },
-          { name: "assetContract", internalType: "address", type: "address" },
-          { name: "currency", internalType: "address", type: "address" },
+          { name: 'listingId', internalType: 'uint256', type: 'uint256' },
+          { name: 'tokenId', internalType: 'uint256', type: 'uint256' },
+          { name: 'quantity', internalType: 'uint256', type: 'uint256' },
+          { name: 'pricePerToken', internalType: 'uint256', type: 'uint256' },
+          { name: 'startTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'endTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'listingCreator', internalType: 'address', type: 'address' },
+          { name: 'assetContract', internalType: 'address', type: 'address' },
+          { name: 'currency', internalType: 'address', type: 'address' },
+          { name: 'taxRate', internalType: 'uint256', type: 'uint256' },
+          { name: 'taxBeneficiary', internalType: 'address', type: 'address' },
           {
-            name: "tokenType",
-            internalType: "enum IDirectListings.TokenType",
-            type: "uint8",
+            name: 'tokenType',
+            internalType: 'enum IDirectListings.TokenType',
+            type: 'uint8',
           },
           {
-            name: "status",
-            internalType: "enum IDirectListings.Status",
-            type: "uint8",
+            name: 'status',
+            internalType: 'enum IDirectListings.Status',
+            type: 'uint8',
           },
-          { name: "reserved", internalType: "bool", type: "bool" },
+          { name: 'reserved', internalType: 'bool', type: 'bool' },
         ],
       },
     ],
-    stateMutability: "view",
+    stateMutability: 'view',
   },
   {
-    type: "function",
+    type: 'function',
     inputs: [
-      { name: "_listingId", internalType: "uint256", type: "uint256" },
-      { name: "_buyer", internalType: "address", type: "address" },
+      { name: '_listingId', internalType: 'uint256', type: 'uint256' },
+      { name: '_buyer', internalType: 'address', type: 'address' },
     ],
-    name: "isBuyerApprovedForListing",
-    outputs: [{ name: "", internalType: "bool", type: "bool" }],
-    stateMutability: "view",
+    name: 'isBuyerApprovedForListing',
+    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
+    stateMutability: 'view',
   },
   {
-    type: "function",
+    type: 'function',
     inputs: [
-      { name: "_listingId", internalType: "uint256", type: "uint256" },
-      { name: "_currency", internalType: "address", type: "address" },
+      { name: '_listingId', internalType: 'uint256', type: 'uint256' },
+      { name: '_currency', internalType: 'address', type: 'address' },
     ],
-    name: "isCurrencyApprovedForListing",
-    outputs: [{ name: "", internalType: "bool", type: "bool" }],
-    stateMutability: "view",
+    name: 'isCurrencyApprovedForListing',
+    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
+    stateMutability: 'view',
   },
   {
-    type: "function",
-    inputs: [],
-    name: "totalListings",
-    outputs: [{ name: "", internalType: "uint256", type: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
+    type: 'function',
     inputs: [
-      { name: "_listingId", internalType: "uint256", type: "uint256" },
-      {
-        name: "_params",
-        internalType: "struct IDirectListings.ListingParameters",
-        type: "tuple",
-        components: [
-          { name: "assetContract", internalType: "address", type: "address" },
-          { name: "tokenId", internalType: "uint256", type: "uint256" },
-          { name: "quantity", internalType: "uint256", type: "uint256" },
-          { name: "currency", internalType: "address", type: "address" },
-          { name: "pricePerToken", internalType: "uint256", type: "uint256" },
-          { name: "startTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "endTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "reserved", internalType: "bool", type: "bool" },
-        ],
-      },
+      { name: 'underlyingToken', internalType: 'address', type: 'address' },
+      { name: 'superToken', internalType: 'address', type: 'address' },
     ],
-    name: "updateListing",
+    name: 'setTokenX',
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: 'nonpayable',
   },
   {
-    type: "event",
-    anonymous: false,
+    type: 'function',
+    inputs: [{ name: '', internalType: 'address', type: 'address' }],
+    name: 'tokenXs',
+    outputs: [{ name: '', internalType: 'address', type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'totalListings',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     inputs: [
+      { name: '_listingId', internalType: 'uint256', type: 'uint256' },
       {
-        name: "listingId",
-        internalType: "uint256",
-        type: "uint256",
-        indexed: true,
+        name: '_params',
+        internalType: 'struct IDirectListings.ListingParameters',
+        type: 'tuple',
+        components: [
+          { name: 'assetContract', internalType: 'address', type: 'address' },
+          { name: 'tokenId', internalType: 'uint256', type: 'uint256' },
+          { name: 'quantity', internalType: 'uint256', type: 'uint256' },
+          { name: 'currency', internalType: 'address', type: 'address' },
+          { name: 'taxRate', internalType: 'uint256', type: 'uint256' },
+          { name: 'taxBeneficiary', internalType: 'address', type: 'address' },
+          { name: 'pricePerToken', internalType: 'uint256', type: 'uint256' },
+          { name: 'startTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'endTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'reserved', internalType: 'bool', type: 'bool' },
+        ],
       },
-      {
-        name: "buyer",
-        internalType: "address",
-        type: "address",
-        indexed: true,
-      },
-      { name: "approved", internalType: "bool", type: "bool", indexed: false },
     ],
-    name: "BuyerApprovedForListing",
+    name: 'updateListing',
+    outputs: [],
+    stateMutability: 'nonpayable',
   },
   {
-    type: "event",
+    type: 'event',
     anonymous: false,
     inputs: [
       {
-        name: "listingCreator",
-        internalType: "address",
-        type: "address",
+        name: 'listingId',
+        internalType: 'uint256',
+        type: 'uint256',
         indexed: true,
       },
       {
-        name: "listingId",
-        internalType: "uint256",
-        type: "uint256",
+        name: 'buyer',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      { name: 'approved', internalType: 'bool', type: 'bool', indexed: false },
+    ],
+    name: 'BuyerApprovedForListing',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'listingCreator',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'listingId',
+        internalType: 'uint256',
+        type: 'uint256',
         indexed: true,
       },
     ],
-    name: "CancelledListing",
+    name: 'CancelledListing',
   },
   {
-    type: "event",
+    type: 'event',
     anonymous: false,
     inputs: [
       {
-        name: "listingId",
-        internalType: "uint256",
-        type: "uint256",
+        name: 'listingId',
+        internalType: 'uint256',
+        type: 'uint256',
         indexed: true,
       },
       {
-        name: "currency",
-        internalType: "address",
-        type: "address",
+        name: 'currency',
+        internalType: 'address',
+        type: 'address',
         indexed: true,
       },
       {
-        name: "pricePerToken",
-        internalType: "uint256",
-        type: "uint256",
+        name: 'pricePerToken',
+        internalType: 'uint256',
+        type: 'uint256',
         indexed: false,
       },
     ],
-    name: "CurrencyApprovedForListing",
+    name: 'CurrencyApprovedForListing',
   },
   {
-    type: "event",
+    type: 'event',
     anonymous: false,
     inputs: [
       {
-        name: "listingCreator",
-        internalType: "address",
-        type: "address",
+        name: 'listingCreator',
+        internalType: 'address',
+        type: 'address',
         indexed: true,
       },
       {
-        name: "listingId",
-        internalType: "uint256",
-        type: "uint256",
+        name: 'listingId',
+        internalType: 'uint256',
+        type: 'uint256',
         indexed: true,
       },
       {
-        name: "assetContract",
-        internalType: "address",
-        type: "address",
+        name: 'assetContract',
+        internalType: 'address',
+        type: 'address',
         indexed: true,
       },
       {
-        name: "listing",
-        internalType: "struct IDirectListings.Listing",
-        type: "tuple",
+        name: 'listing',
+        internalType: 'struct IDirectListings.Listing',
+        type: 'tuple',
         components: [
-          { name: "listingId", internalType: "uint256", type: "uint256" },
-          { name: "tokenId", internalType: "uint256", type: "uint256" },
-          { name: "quantity", internalType: "uint256", type: "uint256" },
-          { name: "pricePerToken", internalType: "uint256", type: "uint256" },
-          { name: "startTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "endTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "listingCreator", internalType: "address", type: "address" },
-          { name: "assetContract", internalType: "address", type: "address" },
-          { name: "currency", internalType: "address", type: "address" },
+          { name: 'listingId', internalType: 'uint256', type: 'uint256' },
+          { name: 'tokenId', internalType: 'uint256', type: 'uint256' },
+          { name: 'quantity', internalType: 'uint256', type: 'uint256' },
+          { name: 'pricePerToken', internalType: 'uint256', type: 'uint256' },
+          { name: 'startTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'endTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'listingCreator', internalType: 'address', type: 'address' },
+          { name: 'assetContract', internalType: 'address', type: 'address' },
+          { name: 'currency', internalType: 'address', type: 'address' },
+          { name: 'taxRate', internalType: 'uint256', type: 'uint256' },
+          { name: 'taxBeneficiary', internalType: 'address', type: 'address' },
           {
-            name: "tokenType",
-            internalType: "enum IDirectListings.TokenType",
-            type: "uint8",
+            name: 'tokenType',
+            internalType: 'enum IDirectListings.TokenType',
+            type: 'uint8',
           },
           {
-            name: "status",
-            internalType: "enum IDirectListings.Status",
-            type: "uint8",
+            name: 'status',
+            internalType: 'enum IDirectListings.Status',
+            type: 'uint8',
           },
-          { name: "reserved", internalType: "bool", type: "bool" },
+          { name: 'reserved', internalType: 'bool', type: 'bool' },
         ],
         indexed: false,
       },
     ],
-    name: "NewListing",
+    name: 'NewListing',
   },
   {
-    type: "event",
+    type: 'event',
     anonymous: false,
     inputs: [
       {
-        name: "listingCreator",
-        internalType: "address",
-        type: "address",
+        name: 'listingCreator',
+        internalType: 'address',
+        type: 'address',
         indexed: true,
       },
       {
-        name: "listingId",
-        internalType: "uint256",
-        type: "uint256",
+        name: 'listingId',
+        internalType: 'uint256',
+        type: 'uint256',
         indexed: true,
       },
       {
-        name: "assetContract",
-        internalType: "address",
-        type: "address",
+        name: 'assetContract',
+        internalType: 'address',
+        type: 'address',
         indexed: true,
       },
       {
-        name: "tokenId",
-        internalType: "uint256",
-        type: "uint256",
+        name: 'tokenId',
+        internalType: 'uint256',
+        type: 'uint256',
         indexed: false,
       },
       {
-        name: "buyer",
-        internalType: "address",
-        type: "address",
+        name: 'buyer',
+        internalType: 'address',
+        type: 'address',
         indexed: false,
       },
       {
-        name: "quantityBought",
-        internalType: "uint256",
-        type: "uint256",
+        name: 'quantityBought',
+        internalType: 'uint256',
+        type: 'uint256',
         indexed: false,
       },
       {
-        name: "totalPricePaid",
-        internalType: "uint256",
-        type: "uint256",
+        name: 'totalPricePaid',
+        internalType: 'uint256',
+        type: 'uint256',
         indexed: false,
       },
     ],
-    name: "NewSale",
+    name: 'NewSale',
   },
   {
-    type: "event",
+    type: 'event',
     anonymous: false,
     inputs: [
       {
-        name: "listingCreator",
-        internalType: "address",
-        type: "address",
+        name: 'listingCreator',
+        internalType: 'address',
+        type: 'address',
         indexed: true,
       },
       {
-        name: "listingId",
-        internalType: "uint256",
-        type: "uint256",
+        name: 'listingId',
+        internalType: 'uint256',
+        type: 'uint256',
         indexed: true,
       },
       {
-        name: "assetContract",
-        internalType: "address",
-        type: "address",
+        name: 'assetContract',
+        internalType: 'address',
+        type: 'address',
         indexed: true,
       },
       {
-        name: "listing",
-        internalType: "struct IDirectListings.Listing",
-        type: "tuple",
+        name: 'listing',
+        internalType: 'struct IDirectListings.Listing',
+        type: 'tuple',
         components: [
-          { name: "listingId", internalType: "uint256", type: "uint256" },
-          { name: "tokenId", internalType: "uint256", type: "uint256" },
-          { name: "quantity", internalType: "uint256", type: "uint256" },
-          { name: "pricePerToken", internalType: "uint256", type: "uint256" },
-          { name: "startTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "endTimestamp", internalType: "uint128", type: "uint128" },
-          { name: "listingCreator", internalType: "address", type: "address" },
-          { name: "assetContract", internalType: "address", type: "address" },
-          { name: "currency", internalType: "address", type: "address" },
+          { name: 'listingId', internalType: 'uint256', type: 'uint256' },
+          { name: 'tokenId', internalType: 'uint256', type: 'uint256' },
+          { name: 'quantity', internalType: 'uint256', type: 'uint256' },
+          { name: 'pricePerToken', internalType: 'uint256', type: 'uint256' },
+          { name: 'startTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'endTimestamp', internalType: 'uint128', type: 'uint128' },
+          { name: 'listingCreator', internalType: 'address', type: 'address' },
+          { name: 'assetContract', internalType: 'address', type: 'address' },
+          { name: 'currency', internalType: 'address', type: 'address' },
+          { name: 'taxRate', internalType: 'uint256', type: 'uint256' },
+          { name: 'taxBeneficiary', internalType: 'address', type: 'address' },
           {
-            name: "tokenType",
-            internalType: "enum IDirectListings.TokenType",
-            type: "uint8",
+            name: 'tokenType',
+            internalType: 'enum IDirectListings.TokenType',
+            type: 'uint8',
           },
           {
-            name: "status",
-            internalType: "enum IDirectListings.Status",
-            type: "uint8",
+            name: 'status',
+            internalType: 'enum IDirectListings.Status',
+            type: 'uint8',
           },
-          { name: "reserved", internalType: "bool", type: "bool" },
+          { name: 'reserved', internalType: 'bool', type: 'bool' },
         ],
         indexed: false,
       },
     ],
-    name: "UpdatedListing",
+    name: 'UpdatedListing',
   },
   {
-    type: "error",
+    type: 'error',
     inputs: [
-      { name: "expected", internalType: "uint256", type: "uint256" },
-      { name: "actual", internalType: "uint256", type: "uint256" },
+      { name: 'expected', internalType: 'uint256', type: 'uint256' },
+      { name: 'actual', internalType: 'uint256', type: 'uint256' },
     ],
-    name: "CurrencyTransferLibMismatchedValue",
+    name: 'CurrencyTransferLibMismatchedValue',
   },
-] as const;
+] as const
 
 /**
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const directListingsLogicAddress = {
-  1337: "0x998abeb3E57409262aE5b751f60747921B33613E",
-} as const;
+  1337: '0x998abeb3E57409262aE5b751f60747921B33613E',
+  11155111: '0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3',
+} as const
 
 /**
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const directListingsLogicConfig = {
   address: directListingsLogicAddress,
   abi: directListingsLogicAbi,
-} as const;
+} as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // React
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnership = /*#__PURE__*/ createUseReadContract({
+  abi: adCommonOwnershipAbi,
+  address: adCommonOwnershipAddress,
+})
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"balanceOf"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnershipBalanceOf =
+  /*#__PURE__*/ createUseReadContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'balanceOf',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"getAdGroup"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnershipGetAdGroup =
+  /*#__PURE__*/ createUseReadContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'getAdGroup',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"getAdGroupSize"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnershipGetAdGroupSize =
+  /*#__PURE__*/ createUseReadContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'getAdGroupSize',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"getApproved"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnershipGetApproved =
+  /*#__PURE__*/ createUseReadContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'getApproved',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"group"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnershipGroup =
+  /*#__PURE__*/ createUseReadContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'group',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"isApprovedForAll"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnershipIsApprovedForAll =
+  /*#__PURE__*/ createUseReadContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'isApprovedForAll',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"name"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnershipName = /*#__PURE__*/ createUseReadContract(
+  {
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'name',
+  },
+)
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"ownerOf"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnershipOwnerOf =
+  /*#__PURE__*/ createUseReadContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'ownerOf',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"supportsInterface"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnershipSupportsInterface =
+  /*#__PURE__*/ createUseReadContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'supportsInterface',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"symbol"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnershipSymbol =
+  /*#__PURE__*/ createUseReadContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'symbol',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"tokenURI"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useReadAdCommonOwnershipTokenUri =
+  /*#__PURE__*/ createUseReadContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'tokenURI',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWriteAdCommonOwnership = /*#__PURE__*/ createUseWriteContract({
+  abi: adCommonOwnershipAbi,
+  address: adCommonOwnershipAddress,
+})
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"approve"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWriteAdCommonOwnershipApprove =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'approve',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"createAdGroup"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWriteAdCommonOwnershipCreateAdGroup =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'createAdGroup',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"safeTransferFrom"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWriteAdCommonOwnershipSafeTransferFrom =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'safeTransferFrom',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"setAdUri"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWriteAdCommonOwnershipSetAdUri =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'setAdUri',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"setApprovalForAll"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWriteAdCommonOwnershipSetApprovalForAll =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'setApprovalForAll',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"transferFrom"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWriteAdCommonOwnershipTransferFrom =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'transferFrom',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useSimulateAdCommonOwnership =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"approve"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useSimulateAdCommonOwnershipApprove =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'approve',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"createAdGroup"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useSimulateAdCommonOwnershipCreateAdGroup =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'createAdGroup',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"safeTransferFrom"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useSimulateAdCommonOwnershipSafeTransferFrom =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'safeTransferFrom',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"setAdUri"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useSimulateAdCommonOwnershipSetAdUri =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'setAdUri',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"setApprovalForAll"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useSimulateAdCommonOwnershipSetApprovalForAll =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'setApprovalForAll',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `functionName` set to `"transferFrom"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useSimulateAdCommonOwnershipTransferFrom =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    functionName: 'transferFrom',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link adCommonOwnershipAbi}__
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWatchAdCommonOwnershipEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `eventName` set to `"AdGroupCreated"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWatchAdCommonOwnershipAdGroupCreatedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    eventName: 'AdGroupCreated',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `eventName` set to `"AdUriSet"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWatchAdCommonOwnershipAdUriSetEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    eventName: 'AdUriSet',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `eventName` set to `"Approval"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWatchAdCommonOwnershipApprovalEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    eventName: 'Approval',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `eventName` set to `"ApprovalForAll"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWatchAdCommonOwnershipApprovalForAllEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    eventName: 'ApprovalForAll',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link adCommonOwnershipAbi}__ and `eventName` set to `"Transfer"`
+ *
+ * [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0xF8003FF87Fc0bCE925A67B0061d1737de0260746)
+ */
+export const useWatchAdCommonOwnershipTransferEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: adCommonOwnershipAbi,
+    address: adCommonOwnershipAddress,
+    eventName: 'Transfer',
+  })
+
+/**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link directListingsLogicAbi}__
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useReadDirectListingsLogic = /*#__PURE__*/ createUseReadContract({
   abi: directListingsLogicAbi,
   address: directListingsLogicAddress,
-});
+})
 
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"_msgData"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useReadDirectListingsLogicMsgData =
   /*#__PURE__*/ createUseReadContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "_msgData",
-  });
+    functionName: '_msgData',
+  })
 
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"_msgSender"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useReadDirectListingsLogicMsgSender =
   /*#__PURE__*/ createUseReadContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "_msgSender",
-  });
+    functionName: '_msgSender',
+  })
 
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"currencyPriceForListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useReadDirectListingsLogicCurrencyPriceForListing =
   /*#__PURE__*/ createUseReadContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "currencyPriceForListing",
-  });
+    functionName: 'currencyPriceForListing',
+  })
 
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"getAllListings"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useReadDirectListingsLogicGetAllListings =
   /*#__PURE__*/ createUseReadContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "getAllListings",
-  });
+    functionName: 'getAllListings',
+  })
 
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"getAllValidListings"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useReadDirectListingsLogicGetAllValidListings =
   /*#__PURE__*/ createUseReadContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "getAllValidListings",
-  });
+    functionName: 'getAllValidListings',
+  })
 
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"getListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useReadDirectListingsLogicGetListing =
   /*#__PURE__*/ createUseReadContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "getListing",
-  });
+    functionName: 'getListing',
+  })
 
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"isBuyerApprovedForListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useReadDirectListingsLogicIsBuyerApprovedForListing =
   /*#__PURE__*/ createUseReadContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "isBuyerApprovedForListing",
-  });
+    functionName: 'isBuyerApprovedForListing',
+  })
 
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"isCurrencyApprovedForListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useReadDirectListingsLogicIsCurrencyApprovedForListing =
   /*#__PURE__*/ createUseReadContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "isCurrencyApprovedForListing",
-  });
+    functionName: 'isCurrencyApprovedForListing',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"tokenXs"`
+ *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
+ */
+export const useReadDirectListingsLogicTokenXs =
+  /*#__PURE__*/ createUseReadContract({
+    abi: directListingsLogicAbi,
+    address: directListingsLogicAddress,
+    functionName: 'tokenXs',
+  })
 
 /**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"totalListings"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useReadDirectListingsLogicTotalListings =
   /*#__PURE__*/ createUseReadContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "totalListings",
-  });
+    functionName: 'totalListings',
+  })
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link directListingsLogicAbi}__
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWriteDirectListingsLogic = /*#__PURE__*/ createUseWriteContract(
-  { abi: directListingsLogicAbi, address: directListingsLogicAddress }
-);
+  { abi: directListingsLogicAbi, address: directListingsLogicAddress },
+)
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"approveBuyerForListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWriteDirectListingsLogicApproveBuyerForListing =
   /*#__PURE__*/ createUseWriteContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "approveBuyerForListing",
-  });
+    functionName: 'approveBuyerForListing',
+  })
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"approveCurrencyForListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWriteDirectListingsLogicApproveCurrencyForListing =
   /*#__PURE__*/ createUseWriteContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "approveCurrencyForListing",
-  });
+    functionName: 'approveCurrencyForListing',
+  })
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"buyFromListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWriteDirectListingsLogicBuyFromListing =
   /*#__PURE__*/ createUseWriteContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "buyFromListing",
-  });
+    functionName: 'buyFromListing',
+  })
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"cancelListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWriteDirectListingsLogicCancelListing =
   /*#__PURE__*/ createUseWriteContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "cancelListing",
-  });
+    functionName: 'cancelListing',
+  })
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"createListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWriteDirectListingsLogicCreateListing =
   /*#__PURE__*/ createUseWriteContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "createListing",
-  });
+    functionName: 'createListing',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"setTokenX"`
+ *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
+ */
+export const useWriteDirectListingsLogicSetTokenX =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: directListingsLogicAbi,
+    address: directListingsLogicAddress,
+    functionName: 'setTokenX',
+  })
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"updateListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWriteDirectListingsLogicUpdateListing =
   /*#__PURE__*/ createUseWriteContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "updateListing",
-  });
+    functionName: 'updateListing',
+  })
 
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link directListingsLogicAbi}__
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useSimulateDirectListingsLogic =
   /*#__PURE__*/ createUseSimulateContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-  });
+  })
 
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"approveBuyerForListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useSimulateDirectListingsLogicApproveBuyerForListing =
   /*#__PURE__*/ createUseSimulateContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "approveBuyerForListing",
-  });
+    functionName: 'approveBuyerForListing',
+  })
 
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"approveCurrencyForListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useSimulateDirectListingsLogicApproveCurrencyForListing =
   /*#__PURE__*/ createUseSimulateContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "approveCurrencyForListing",
-  });
+    functionName: 'approveCurrencyForListing',
+  })
 
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"buyFromListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useSimulateDirectListingsLogicBuyFromListing =
   /*#__PURE__*/ createUseSimulateContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "buyFromListing",
-  });
+    functionName: 'buyFromListing',
+  })
 
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"cancelListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useSimulateDirectListingsLogicCancelListing =
   /*#__PURE__*/ createUseSimulateContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "cancelListing",
-  });
+    functionName: 'cancelListing',
+  })
 
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"createListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useSimulateDirectListingsLogicCreateListing =
   /*#__PURE__*/ createUseSimulateContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "createListing",
-  });
+    functionName: 'createListing',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"setTokenX"`
+ *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
+ */
+export const useSimulateDirectListingsLogicSetTokenX =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: directListingsLogicAbi,
+    address: directListingsLogicAddress,
+    functionName: 'setTokenX',
+  })
 
 /**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link directListingsLogicAbi}__ and `functionName` set to `"updateListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useSimulateDirectListingsLogicUpdateListing =
   /*#__PURE__*/ createUseSimulateContract({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    functionName: "updateListing",
-  });
+    functionName: 'updateListing',
+  })
 
 /**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link directListingsLogicAbi}__
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWatchDirectListingsLogicEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-  });
+  })
 
 /**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link directListingsLogicAbi}__ and `eventName` set to `"BuyerApprovedForListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWatchDirectListingsLogicBuyerApprovedForListingEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    eventName: "BuyerApprovedForListing",
-  });
+    eventName: 'BuyerApprovedForListing',
+  })
 
 /**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link directListingsLogicAbi}__ and `eventName` set to `"CancelledListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWatchDirectListingsLogicCancelledListingEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    eventName: "CancelledListing",
-  });
+    eventName: 'CancelledListing',
+  })
 
 /**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link directListingsLogicAbi}__ and `eventName` set to `"CurrencyApprovedForListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWatchDirectListingsLogicCurrencyApprovedForListingEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    eventName: "CurrencyApprovedForListing",
-  });
+    eventName: 'CurrencyApprovedForListing',
+  })
 
 /**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link directListingsLogicAbi}__ and `eventName` set to `"NewListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWatchDirectListingsLogicNewListingEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    eventName: "NewListing",
-  });
+    eventName: 'NewListing',
+  })
 
 /**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link directListingsLogicAbi}__ and `eventName` set to `"NewSale"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWatchDirectListingsLogicNewSaleEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    eventName: "NewSale",
-  });
+    eventName: 'NewSale',
+  })
 
 /**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link directListingsLogicAbi}__ and `eventName` set to `"UpdatedListing"`
  *
- *
+ * -
+ * - [__View Contract on Sepolia Etherscan__](https://sepolia.etherscan.io/address/0x69B4a211Fb36e33B2BF45F122A7f65A6F8bF9Ed3)
  */
 export const useWatchDirectListingsLogicUpdatedListingEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: directListingsLogicAbi,
     address: directListingsLogicAddress,
-    eventName: "UpdatedListing",
-  });
+    eventName: 'UpdatedListing',
+  })

@@ -11,7 +11,10 @@ export default defineConfig(async () => {
       foundry({
         artifacts: "./foundry/out",
         deployments,
-        include: ["DirectListingsLogic.sol/*.json"],
+        include: [
+          "DirectListingsLogic.sol/*.json",
+          "AdCommonOwnership.sol/*.json",
+        ],
       }),
       react({}),
     ],
