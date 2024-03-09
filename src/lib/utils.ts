@@ -18,3 +18,7 @@ export const getExplorerLink = (
 ) => {
   return `${chain?.blockExplorers?.default?.url}/${path}/${data}`;
 };
+
+export const getWeeklyTaxDue = (price: bigint, taxRate: bigint) => {
+  return (BigInt(price) * BigInt(taxRate)) / BigInt(10000);
+};
