@@ -2,6 +2,7 @@
   "rules": {
     "no-unused-imports": "off",
     "custom-errors": "off",
-    "private-vars-leading-underscore": "off"
+    "private-vars-leading-underscore": "off",
+    "max-line-length": "off"
   }
 }

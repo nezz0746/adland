@@ -73,6 +73,15 @@ contract MarketplaceScript is BaseScript, IExtension {
             keccak256("ASSET_ROLE"),
             address(adCommons)
         );
+
+        // Create sample ad group
+        adCommons.createAdGroup(
+            deployer,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            0.001 ether,
+            120,
+            5
+        );
     }
 
     function _deployMarketplace(

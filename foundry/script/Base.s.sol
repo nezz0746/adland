@@ -49,7 +49,6 @@ abstract contract BaseScript is Script {
         _loadSender();
         console2.log("Broadcasting on chain: ", forks[chain]);
         vm.startBroadcast(deployerPrivateKey);
-        console2.log("SENDER: ", msg.sender);
         _;
         vm.stopBroadcast();
     }
@@ -84,10 +83,7 @@ abstract contract BaseScript is Script {
                 index: 0
             });
         } else {
-            console2.log("Using $PK");
-            console2.log("SENDER", msg.sender);
             deployerPrivateKey = vm.envUint("PK");
-            console2.log("SENDER", msg.sender);
         }
     }
 }
