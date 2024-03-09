@@ -16,10 +16,13 @@ contract MarketplaceScript is BaseScript, IExtension {
     function deployLocal() public broadcastOn(DeployementChain.Anvil) {
         weth = new WETH9();
 
+        DirectListingsLogic marketplace = _deployMarketplace();
+
+        _saveDeployment(address(marketplace), "DirectListingsLogic");
+    }
+
+    function _deployMarketplace() public returns (DirectListingsLogic) {
         address marketplaceDeployer = msg.sender;
-
-        console.log("MarketplaceDeployer: ", marketplaceDeployer);
-
         Extension[] memory extensions = _setupExtensions();
 
         address impl = address(
@@ -48,7 +51,7 @@ contract MarketplaceScript is BaseScript, IExtension {
             )
         );
 
-        _saveDeployment(marketplace, "DirectListingsLogic");
+        return DirectListingsLogic(marketplace);
     }
 
     function _setupExtensions()
@@ -61,7 +64,6 @@ contract MarketplaceScript is BaseScript, IExtension {
         address directListings = address(
             new DirectListingsLogic(address(weth))
         );
-        vm.label(directListings, "DirectListings_Extension");
 
         // Extension: DirectListingsLogic
         Extension memory extensionDirectListings;
@@ -71,7 +73,7 @@ contract MarketplaceScript is BaseScript, IExtension {
             implementation: directListings
         });
 
-        extensionDirectListings.functions = new ExtensionFunction[](13);
+        extensionDirectListings.functions = new ExtensionFunction[](14);
         extensionDirectListings.functions[0] = ExtensionFunction(
             DirectListingsLogic.totalListings.selector,
             "totalListings()"
@@ -90,11 +92,11 @@ contract MarketplaceScript is BaseScript, IExtension {
         );
         extensionDirectListings.functions[4] = ExtensionFunction(
             DirectListingsLogic.createListing.selector,
-            "createListing((address,uint256,uint256,address,uint256,uint128,uint128,bool))"
+            "createListing((address,uint256,uint256,address,uint256,address,uint256,uint128,uint128,bool))"
         );
         extensionDirectListings.functions[5] = ExtensionFunction(
             DirectListingsLogic.updateListing.selector,
-            "updateListing(uint256,(address,uint256,uint256,address,uint256,uint128,uint128,bool))"
+            "updateListing(uint256,(address,uint256,uint256,address,uint256,address,uint256,uint128,uint128,bool))"
         );
         extensionDirectListings.functions[6] = ExtensionFunction(
             DirectListingsLogic.cancelListing.selector,
@@ -123,6 +125,11 @@ contract MarketplaceScript is BaseScript, IExtension {
         extensionDirectListings.functions[12] = ExtensionFunction(
             DirectListingsLogic.getListing.selector,
             "getListing(uint256)"
+        );
+
+        extensionDirectListings.functions[13] = ExtensionFunction(
+            DirectListingsLogic.setTokenX.selector,
+            "setTokenX(address,address)"
         );
 
         extensions[0] = extensionDirectListings;
