@@ -21,6 +21,9 @@ export default defineConfig(async () => {
         include: [
           "DirectListingsLogic.sol/*.json",
           "AdCommonOwnership.sol/*.json",
+          "SuperToken.sol/*.json",
+          "ISETH.sol/*.json",
+          "ConstantFlowAgreementV1.sol/*.json",
         ],
       }),
       react({}),
