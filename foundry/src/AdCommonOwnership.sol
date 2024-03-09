@@ -8,9 +8,12 @@ import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 contract AdCommonOwnership is ERC721 {
     uint256 constant MAX_BPS = 10_000;
 
+    uint256 constant MAX_GROUP_SIZE = 20;
+
     IDirectListings marketplace;
 
     struct AdGroup {
+        address beneficiary;
         uint256 startListingId;
         uint256 endListingId;
     }
@@ -21,7 +24,7 @@ contract AdCommonOwnership is ERC721 {
 
     mapping(uint256 => string) adUris;
 
-    event AdGroupCreated(uint256 group, uint8 size);
+    event AdGroupCreated(uint256 group, address beneficiary, uint8 size);
 
     event AdUriSet(uint256 listingId, string uri);
 
@@ -77,11 +80,12 @@ contract AdCommonOwnership is ERC721 {
         group++;
 
         adGroups[group] = AdGroup(
+            beneficiary,
             nextStartListingId,
             nextStartListingId + size - 1
         );
 
-        emit AdGroupCreated(group, size);
+        emit AdGroupCreated(group, beneficiary, size);
     }
 
     /**
@@ -117,6 +121,22 @@ contract AdCommonOwnership is ERC721 {
     function getAdGroupSize(uint256 _group) public view returns (uint256) {
         return
             adGroups[_group].endListingId - adGroups[_group].startListingId + 1;
+    }
+
+    function getAllGroups(
+        uint256 startGroupId,
+        uint256 endGroupId
+    ) public view returns (AdGroup[] memory) {
+        require(
+            startGroupId <= endGroupId &&
+                endGroupId - startGroupId < MAX_GROUP_SIZE,
+            "AdCommonOwnership: Invalid range"
+        );
+        AdGroup[] memory groups = new AdGroup[](endGroupId - startGroupId + 1);
+        for (uint256 i = startGroupId; i <= endGroupId; i++) {
+            groups[i - startGroupId] = adGroups[i];
+        }
+        return groups;
     }
 
     function isApprovedForAll(
