@@ -16,7 +16,7 @@ import {TestToken} from "@superfluid-finance/ethereum-contracts/contracts/utils/
 import {ConstantFlowAgreementV1} from "@superfluid-finance/ethereum-contracts/contracts/agreements/ConstantFlowAgreementV1.sol";
 import {ISETH} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/tokens/ISETH.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
-import {AdCommonOwnership} from "../../src/ListingFactory.sol";
+import {AdCommonOwnership} from "../../src/AdCommonOwnership.sol";
 import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {ERC1820RegistryCompiled} from "@superfluid-finance/ethereum-contracts/contracts/libs/ERC1820RegistryCompiled.sol";
 

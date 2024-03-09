@@ -5,7 +5,7 @@ import {console} from "forge-std/Test.sol";
 import {ListingBase, ISuperToken, SuperToken} from "./helpers/ListingBase.sol";
 import {WETH9} from "../src/mocks/WETH9.sol";
 import {DirectListingsLogic} from "contracts/prebuilts/marketplace/direct-listings/DirectListingsLogic.sol";
-import {AdCommonOwnership} from "../src/ListingFactory.sol";
+import {AdCommonOwnership} from "../src/AdCommonOwnership.sol";
 import {MarketplaceV3} from "contracts/prebuilts/marketplace/entrypoint/MarketplaceV3.sol";
 import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {IDirectListings} from "contracts/prebuilts/marketplace/IMarketplace.sol";

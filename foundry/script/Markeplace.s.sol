@@ -5,7 +5,7 @@ import {console} from "forge-std/Script.sol";
 import {WETH9} from "../src/mocks/WETH9.sol";
 import {BaseScript} from "./Base.s.sol";
 import {TWProxy} from "contracts/infra/TWProxy.sol";
-import {AdCommonOwnership} from "../src/ListingFactory.sol";
+import {AdCommonOwnership} from "../src/AdCommonOwnership.sol";
 import {MarketplaceV3} from "contracts/prebuilts/marketplace/entrypoint/MarketplaceV3.sol";
 import {DirectListingsLogic} from "contracts/prebuilts/marketplace/direct-listings/DirectListingsLogic.sol";
 import "@thirdweb-dev/dynamic-contracts/src/interface/IExtension.sol";
