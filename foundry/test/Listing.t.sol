@@ -117,11 +117,7 @@ contract ListingTest is ListingBase {
             initialPrice
         );
 
-        _logFlowInfo(buyer, beneficiary);
-
         vm.warp(block.timestamp + 1 days);
-
-        _logFlowInfo(buyer, beneficiary);
 
         assertEq(beneficiary.balance, initialPrice);
         assertEq(adCommons.ownerOf(1), buyer);
@@ -152,6 +148,11 @@ contract ListingTest is ListingBase {
         vm.prank(buyer2);
         vm.expectRevert("NFT: Only marketplace can transfer");
         adCommons.safeTransferFrom(buyer2, vm.addr(22), 1);
+
+        (, int96 flowRate, , ) = _logFlowInfo(buyer, beneficiary);
+
+        // Expect flow for buyer to be stopped
+        assertEq(flowRate, 0);
     }
 
     function testBuyListingDAI() public {
@@ -295,15 +296,26 @@ contract ListingTest is ListingBase {
 
     ////////////////////////// HELPERS //////////////////////////
 
-    function _logFlowInfo(address sender, address receiver) internal view {
-        (
+    function _logFlowInfo(
+        address sender,
+        address receiver
+    )
+        internal
+        view
+        returns (
             uint256 timestamp,
             int96 flowRate,
             uint256 deposit,
             uint256 owedDeposit
-        ) = sf.cfa.getFlow(ethx, sender, receiver);
+        )
+    {
+        (timestamp, flowRate, deposit, owedDeposit) = sf.cfa.getFlow(
+            ethx,
+            sender,
+            receiver
+        );
 
-        console.log("balanceOfReceiver    :", ethx.balanceOf(receiver));
+        console.log("..................... Flow Info .....................");
         console.log("flowRate             :", uint256(int256(flowRate)));
         console.log("deposit              :", deposit);
         console.log("owedDeposit          :", owedDeposit);
