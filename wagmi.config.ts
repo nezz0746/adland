@@ -23,7 +23,7 @@ export default defineConfig(async () => {
           "AdCommonOwnership.sol/*.json",
           "SuperToken.sol/*.json",
           "ISETH.sol/*.json",
-          "ConstantFlowAgreementV1.sol/*.json",
+          "CFAv1Forwarder.sol/*.json",
         ],
       }),
       react({}),

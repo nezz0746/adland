@@ -27,7 +27,7 @@ export const superfluidAddresses: Record<
   [11155111]: {
     ethx: "0x30a6933Ca9230361972E413a15dC8114c952414e",
     daix: "0x9Ce2062b085A2268E8d769fFC040f6692315fd2c",
-    cfaV1: "0x6836F23d6171D74Ef62FcF776655aBcD2bcd62Ef",
+    cfaV1: "0xcfA132E353cB4E398080B9700609bb008eceB125",
   },
 };
 
