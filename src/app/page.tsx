@@ -80,8 +80,6 @@ export default function Home() {
     },
   });
 
-  console.log({ adGroups });
-
   return (
     <>
       <Card>
@@ -147,41 +145,50 @@ export default function Home() {
           </div>
         </CardFooter>
       </Card>
-      <Table>
-        <TableCaption>All Perpetual Ad Groups.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Group ID</TableHead>
-            <TableHead>Beneficiary</TableHead>
-            <TableHead></TableHead>
-            <TableHead className="text-right">Size</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {adGroups?.map(({ id, beneficiary, size }) => (
-            <TableRow
-              key={id}
-              className="cursor-pointer"
-              onClick={() => {
-                push(`/group/${id}`);
-              }}
-            >
-              <TableCell className="font-medium">{id}</TableCell>
-              <TableCell>{beneficiary}</TableCell>
-              <TableCell>{""}</TableCell>
-              <TableCell className="text-right">{size}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={3}>Total</TableCell>
-            <TableCell className="text-right">
-              {adGroups?.reduce((acc, adGroup) => acc + adGroup.size, 0)}
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+      <Card>
+        <CardHeader>
+          <CardTitle>Ad Groups</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Card>
+            <Table>
+              <TableCaption>All Perpetual Ad Groups.</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[100px]">Group ID</TableHead>
+                  <TableHead>Beneficiary</TableHead>
+                  <TableHead></TableHead>
+                  <TableHead className="text-right">Size</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {adGroups?.map(({ id, beneficiary, size }) => (
+                  <TableRow
+                    key={id}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      push(`/group/${id}`);
+                    }}
+                  >
+                    <TableCell className="font-medium">{id}</TableCell>
+                    <TableCell>{beneficiary}</TableCell>
+                    <TableCell>{""}</TableCell>
+                    <TableCell className="text-right">{size}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell colSpan={3}>Total</TableCell>
+                  <TableCell className="text-right">
+                    {adGroups?.reduce((acc, adGroup) => acc + adGroup.size, 0)}
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </Card>
+        </CardContent>
+      </Card>
     </>
   );
 }
