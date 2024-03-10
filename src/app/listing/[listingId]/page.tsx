@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  constantFlowAgreementV1Abi,
+  cfAv1ForwarderAbi,
   directListingsLogicAbi,
   directListingsLogicAddress,
   isethAbi,
@@ -15,8 +15,11 @@ import {
   superfluidAddresses,
 } from "@/lib/constants";
 import { useSmartAccount } from "@/lib/pimlico";
-import { getWeeklyTaxDue } from "@/lib/utils";
+import { bundler } from "@/lib/pimlico.config";
+import { getExplorerLink, getWeeklyTaxDue } from "@/lib/utils";
+import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import { Address, encodeFunctionData, formatEther } from "viem";
 
 type Transaction = { to: Address; value: bigint; data: `0x${string}` };
@@ -24,6 +27,7 @@ type Transaction = { to: Address; value: bigint; data: `0x${string}` };
 const ListingPage = () => {
   const { smartAccount } = useSmartAccount();
   const { listingId } = useParams();
+  const [txHash, setTxHash] = useState<string | undefined>(undefined);
 
   const { data: listing, error } = useReadDirectListingsLogicGetListing({
     args: [BigInt(parseInt((listingId as string) ?? "0"))],
@@ -51,55 +55,64 @@ const ListingPage = () => {
     },
   });
 
+  console.log({ price: listing?.pricePerToken, owner });
+
   const buy = async () => {
     if (listing?.pricePerToken === undefined) return;
+
+    const ssaAddress = smartAccount?.account?.address as Address;
+    const listingId = listing?.listingIdBigInt;
+    const price = listing?.pricePerToken;
+    const taxRate = listing?.taxRateBigInt;
+
+    const cfaV1 = superfluidAddresses[initialChain.id as 11155111].cfaV1;
+    const ethx = superfluidAddresses[initialChain.id as 11155111].ethx;
+    const marketplace = directListingsLogicAddress[initialChain.id as 11155111];
 
     const transactions: Transaction[] = [
       // Give marketplace permission to withdraw funds
       {
-        to: superfluidAddresses[initialChain.id as 11155111].cfaV1,
+        to: cfaV1,
         data: encodeFunctionData({
-          abi: constantFlowAgreementV1Abi,
-          functionName: "authorizeFlowOperatorWithFullControl",
-          args: [
-            superfluidAddresses[initialChain.id as 11155111].ethx,
-            directListingsLogicAddress[initialChain.id as 11155111],
-            "0x0",
-          ],
+          abi: cfAv1ForwarderAbi,
+          functionName: "grantPermissions",
+          args: [ethx, marketplace],
         }),
         value: BigInt(0),
       },
       // Upgrade ETH to ETHx
       {
-        to: superfluidAddresses[initialChain.id as 11155111].ethx,
+        to: ethx,
         data: encodeFunctionData({
           abi: isethAbi,
           functionName: "upgradeByETH",
           args: undefined,
         }),
-        value: getWeeklyTaxDue(listing?.pricePerToken, listing?.taxRateBigInt),
+        value: getWeeklyTaxDue(price, taxRate),
       },
       // Buy from Listing
       {
-        to: directListingsLogicAddress[initialChain.id as 11155111],
+        to: marketplace,
         data: encodeFunctionData({
           abi: directListingsLogicAbi,
           functionName: "buyFromListing",
-          args: [
-            listing?.listingIdBigInt,
-            smartAccount?.account?.address as Address,
-            BigInt(1),
-            NATIVE_CURRENCY,
-            listing?.pricePerToken,
-          ],
+          args: [listingId, ssaAddress, BigInt(1), NATIVE_CURRENCY, price],
         }),
-        value: listing?.pricePerToken,
+        value: price,
       },
     ];
 
+    console.log({ transactions });
+
+    const { fast } = await bundler.getUserOperationGasPrice();
+
     const txHash = await smartAccount?.sendTransactions({
       transactions,
+      maxFeePerGas: fast.maxFeePerGas,
+      maxPriorityFeePerGas: fast.maxPriorityFeePerGas,
     });
+
+    setTxHash(txHash);
   };
 
   return (
@@ -115,6 +128,11 @@ const ListingPage = () => {
       >
         BUY
       </Button>
+      {txHash && (
+        <Link target="_blank" href={getExplorerLink(txHash, "tx")}>
+          Transaction Hash: {txHash}
+        </Link>
+      )}
     </div>
   );
 };
