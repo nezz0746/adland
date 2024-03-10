@@ -23,9 +23,11 @@ import {
   isethAbi,
   useReadAdCommonOwnershipGetAllGroups,
   useReadSuperTokenBalanceOf,
+  useWatchIsethTokenUpgradedEvent,
 } from "@/generated";
 import { superfluidAddresses } from "@/lib/constants";
 import { useSmartAccount } from "@/lib/pimlico";
+import { truncateAddress } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import {
   Address,
@@ -44,16 +46,24 @@ export default function Home() {
 
     query: {
       enabled: Boolean(smartAccount?.account.address),
-      refetchInterval: 10000,
     },
   });
 
-  const { data: ethXBalance } = useReadSuperTokenBalanceOf({
+  const { data: ethXBalance, refetch } = useReadSuperTokenBalanceOf({
     address: superfluidAddresses[11155111].ethx,
     args: [smartAccount?.account?.address as Address],
     query: {
       enabled: Boolean(smartAccount?.account.address),
-      refetchInterval: 10000,
+    },
+  });
+
+  useWatchIsethTokenUpgradedEvent({
+    address: superfluidAddresses[11155111].ethx,
+    args: {
+      account: smartAccount?.account.address,
+    },
+    onLogs: (logs) => {
+      refetch && refetch();
     },
   });
 
@@ -84,17 +94,24 @@ export default function Home() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Account</CardTitle>
+          <CardTitle>
+            Account: {truncateAddress(smartAccount?.account.address)}
+          </CardTitle>
           <CardDescription>
             Your account and balance. Use the buttons to fund your account and
             upgrade your ETHx.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p>{smartAccount?.account.address}</p>
           <div className="flex flex-row justify-between">
-            <p>{Number(formatEther(balanceData?.value ?? BigInt(0)))} ETH</p>
-            <p>{Number(formatEther(ethXBalance ?? BigInt(0)))} ETHx</p>
+            <p>
+              <span>Balance: </span>
+              {Number(formatEther(balanceData?.value ?? BigInt(0)))} ETH
+            </p>
+            <p>
+              <span>Balance: </span>
+              {Number(formatEther(ethXBalance ?? BigInt(0)))} ETHx
+            </p>
           </div>
         </CardContent>
         <CardFooter className="flex flex-row justify-between">

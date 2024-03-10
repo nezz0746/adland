@@ -346,9 +346,8 @@ contract ListingTest is ListingBase {
         address from,
         address to
     ) internal {
-        vm.startPrank(from);
-        x.setMaxFlowPermissions(to);
-        vm.stopPrank();
+        vm.prank(from);
+        sf.cfaV1Forwarder.grantPermissions(x, to);
     }
 
     function _mintAndUpgradeERC20(
