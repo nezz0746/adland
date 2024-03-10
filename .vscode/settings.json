@@ -7,4 +7,12 @@
     "editor.defaultFormatter": "NomicFoundation.hardhat-solidity",
     "editor.formatOnSave": true
   },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  }
 }

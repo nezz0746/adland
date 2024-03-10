@@ -53,6 +53,9 @@ contract MarketplaceScript is BaseScript, IExtension {
         TestToken dai = TestToken(daix.getUnderlyingToken());
         ISuperToken ethx = ISuperToken(ethXSepolia);
 
+        _saveDeployment(address(ethx), "ETHx");
+        _saveDeployment(address(daix), "DAIx");
+
         marketplace.setTokenX(CurrencyTransferLib.NATIVE_TOKEN, address(ethx));
         marketplace.setTokenX(address(dai), address(daix));
 
