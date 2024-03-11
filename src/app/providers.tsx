@@ -10,6 +10,8 @@ import { initialChain } from "@/lib/constants";
 import { PimlicoProvider } from "@/lib/pimlico";
 import { ConnectButton } from "@/components/connect-button";
 import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const queryClient = new QueryClient();
 
@@ -20,7 +22,9 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
         <RainbowKitProvider initialChain={initialChain}>
           <PimlicoProvider>
             <nav className="p-4 flex flex-row justify-between">
-              <p className="text-xl font-bold">App</p>
+              <Link href={"/"} className="text-xl font-bold">
+                <Button variant="outline">App</Button>
+              </Link>
               <ConnectButton />
             </nav>
             <Separator />
