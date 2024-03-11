@@ -3,9 +3,9 @@ pragma solidity ^0.8.19;
 
 import {IDirectListings} from "contracts/prebuilts/marketplace/IMarketplace.sol";
 import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
-import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ERC721Royalty, ERC721} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
 
-contract AdCommonOwnership is ERC721 {
+contract AdCommonOwnership is ERC721Royalty {
     uint256 constant MAX_BPS = 10_000;
 
     uint256 constant MAX_GROUP_SIZE = 20;
