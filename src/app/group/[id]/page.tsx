@@ -3,8 +3,11 @@
 import {
   useReadAdCommonOwnershipGetAdGroup,
   useReadDirectListingsLogicGetAllListings,
+  useReadIsethBalanceOf,
 } from "@/generated";
+import { superfluidAddresses } from "@/lib/constants";
 import { useParams, useRouter } from "next/navigation";
+import { formatEther } from "viem";
 
 const GroupPage = () => {
   const { push } = useRouter();
@@ -27,6 +30,17 @@ const GroupPage = () => {
     },
   });
 
+  const { data: benefBalance } = useReadIsethBalanceOf({
+    address: superfluidAddresses[11155111].ethx,
+    args: adGroup?.beneficiary && [adGroup?.beneficiary],
+    query: {
+      enabled: Boolean(adGroup?.beneficiary),
+      select: (data) => {
+        return formatEther(data);
+      },
+    },
+  });
+
   const { data: listings } = useReadDirectListingsLogicGetAllListings({
     args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
     query: {
@@ -42,6 +56,7 @@ const GroupPage = () => {
         <p>Group ID: {id}</p>
         <div className="flex flex-col items-end">
           <p>{adGroup?.beneficiary}</p>
+          <p>{benefBalance}</p>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2">
