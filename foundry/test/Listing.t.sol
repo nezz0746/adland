@@ -148,6 +148,80 @@ contract ListingTest is ListingBase {
         adCommons.setAdUri(1, "https://www.google.com");
     }
 
+    function testBuyMultipleListings() public {
+        adCommons.createAdGroup(
+            beneficiary,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice,
+            baseTaxRateBPS,
+            3
+        );
+
+        address buyer = _getAccount(69, 1000 ether);
+
+        _grantMaxFlowPermissions(ethx, buyer, address(marketplace));
+        _upgradeETH(ethx, buyer, 1 ether);
+
+        vm.prank(buyer);
+        marketplace.buyFromListing{value: initialPrice}(
+            0,
+            buyer,
+            DEFAULT_QUANTITY,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice
+        );
+
+        assertEq(
+            _computeAssetFlowRate(baseTaxRateBPS, initialPrice),
+            _getFlowRate(address(ethx), buyer, beneficiary)
+        );
+
+        vm.prank(buyer);
+        marketplace.buyFromListing{value: initialPrice}(
+            1,
+            buyer,
+            DEFAULT_QUANTITY,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice
+        );
+
+        assertEq(
+            _computeAssetFlowRate(baseTaxRateBPS, initialPrice) * 2,
+            _getFlowRate(address(ethx), buyer, beneficiary)
+        );
+
+        address buyer2 = _getAccount(22, 1000 ether);
+
+        _grantMaxFlowPermissions(ethx, buyer2, address(marketplace));
+
+        _upgradeETH(ethx, buyer2, 1 ether);
+
+        vm.prank(buyer2);
+        marketplace.buyFromListing{value: initialPrice}(
+            1,
+            buyer2,
+            DEFAULT_QUANTITY,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice
+        );
+
+        assertEq(
+            _computeAssetFlowRate(baseTaxRateBPS, initialPrice),
+            _getFlowRate(address(ethx), buyer, beneficiary)
+        );
+
+        vm.prank(buyer2);
+        marketplace.buyFromListing{value: initialPrice}(
+            0,
+            buyer2,
+            DEFAULT_QUANTITY,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice
+        );
+
+        assertEq(0, _getFlowRate(address(ethx), buyer, beneficiary));
+    }
+
     function testBuyListingDAI() public {
         uint256 initialPriceInDai = 100e18; // 100 DAI
         uint256 taxRateBPS = 120; // 1.2% per month
@@ -284,6 +358,28 @@ contract ListingTest is ListingBase {
     }
 
     ////////////////////////// HELPERS //////////////////////////
+
+    function _getFlowRate(
+        address token,
+        address sender,
+        address reciever
+    ) internal view returns (int96) {
+        (, int96 flowRate, , ) = cfa.getFlow(
+            ISuperToken(token),
+            sender,
+            reciever
+        );
+        return flowRate;
+    }
+
+    function _computeAssetFlowRate(
+        uint256 taxRateBPS,
+        uint256 price
+    ) internal pure returns (int96) {
+        uint256 duePerWeek = _taxDuePerWeek(taxRateBPS, price);
+
+        return int96(int256(duePerWeek / 7 days));
+    }
 
     function _logFlowInfo(
         address sender,
