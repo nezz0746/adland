@@ -2,34 +2,44 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  cfAv1ForwarderAbi,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import {
   directListingsLogicAbi,
-  directListingsLogicAddress,
-  isethAbi,
+  useReadCfAv1ForwarderGetFlowOperatorPermissions,
   useReadDirectListingsLogicGetListing,
   useReadErc721OwnerOf,
+  useSimulateDirectListingsLogicBuyFromListing,
+  useWatchDirectListingsLogicNewSaleEvent,
+  useWriteCfAv1ForwarderGrantPermissions,
+  useWriteIsethUpgradeByEth,
 } from "@/generated";
-import {
-  NATIVE_CURRENCY,
-  initialChain,
-  superfluidAddresses,
-} from "@/lib/constants";
-import { useSmartAccount } from "@/lib/pimlico";
-import { bundler } from "@/lib/pimlico.config";
-import { getExplorerLink, getWeeklyTaxDue } from "@/lib/utils";
-import Link from "next/link";
+import useAppContracts from "@/hooks/useAppContracts";
+import { NATIVE_CURRENCY } from "@/lib/constants";
+import { allDefined, getSimulationArgs, getWeeklyTaxDue } from "@/lib/utils";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { Address, encodeFunctionData, formatEther } from "viem";
+import { ContractFunctionArgs, formatEther } from "viem";
+import { useAccount, useWriteContract } from "wagmi";
 
-type Transaction = { to: Address; value: bigint; data: `0x${string}` };
+type BuyFromListinArgs = ContractFunctionArgs<
+  typeof directListingsLogicAbi,
+  "payable",
+  "buyFromListing"
+>;
 
 const ListingPage = () => {
-  const { smartAccount } = useSmartAccount();
+  const { address } = useAccount();
+  const { ethx, cfaV1, marketplace } = useAppContracts();
   const { listingId } = useParams();
-  const [txHash, setTxHash] = useState<string | undefined>(undefined);
+  const [numberOfWeeks, setNumberOfWeeks] = useState<number>(1);
 
-  const { data: listing, error } = useReadDirectListingsLogicGetListing({
+  const { data: listing, refetch } = useReadDirectListingsLogicGetListing({
     args: [BigInt(parseInt((listingId as string) ?? "0"))],
     query: {
       enabled: listingId !== undefined,
@@ -47,7 +57,7 @@ const ListingPage = () => {
     },
   });
 
-  const { data: owner } = useReadErc721OwnerOf({
+  const { data: owner, refetch: refetchOwner } = useReadErc721OwnerOf({
     address: listing?.assetContract,
     args: [listing?.tokenId ?? BigInt(0)],
     query: {
@@ -55,85 +65,121 @@ const ListingPage = () => {
     },
   });
 
-  console.log({ price: listing?.pricePerToken, owner });
+  const { writeContractAsync: callGrantPermission } =
+    useWriteCfAv1ForwarderGrantPermissions();
 
-  const buy = async () => {
-    if (listing?.pricePerToken === undefined) return;
+  const { writeContract: callUpgradeByEth } = useWriteIsethUpgradeByEth();
 
-    const ssaAddress = smartAccount?.account?.address as Address;
-    const listingId = listing?.listingIdBigInt;
+  const grantPermission = () => {
+    callGrantPermission({
+      address: cfaV1,
+      args: [ethx, marketplace],
+    });
+  };
+
+  const depositRent = (weeks: number) => {
     const price = listing?.pricePerToken;
     const taxRate = listing?.taxRateBigInt;
 
-    const cfaV1 = superfluidAddresses[initialChain.id as 11155111].cfaV1;
-    const ethx = superfluidAddresses[initialChain.id as 11155111].ethx;
-    const marketplace = directListingsLogicAddress[initialChain.id as 11155111];
+    if (!taxRate || price === undefined) return;
 
-    const transactions: Transaction[] = [
-      // Give marketplace permission to withdraw funds
-      {
-        to: cfaV1,
-        data: encodeFunctionData({
-          abi: cfAv1ForwarderAbi,
-          functionName: "grantPermissions",
-          args: [ethx, marketplace],
-        }),
-        value: BigInt(0),
-      },
-      // Upgrade ETH to ETHx
-      {
-        to: ethx,
-        data: encodeFunctionData({
-          abi: isethAbi,
-          functionName: "upgradeByETH",
-          args: undefined,
-        }),
-        value: getWeeklyTaxDue(price, taxRate),
-      },
-      // Buy from Listing
-      {
-        to: marketplace,
-        data: encodeFunctionData({
-          abi: directListingsLogicAbi,
-          functionName: "buyFromListing",
-          args: [listingId, ssaAddress, BigInt(1), NATIVE_CURRENCY, price],
-        }),
-        value: price,
-      },
-    ];
-
-    console.log({ transactions });
-
-    const { fast } = await bundler.getUserOperationGasPrice();
-
-    const txHash = await smartAccount?.sendTransactions({
-      transactions,
-      maxFeePerGas: fast.maxFeePerGas,
-      maxPriorityFeePerGas: fast.maxPriorityFeePerGas,
+    callUpgradeByEth({
+      address: ethx,
+      args: undefined,
+      value: getWeeklyTaxDue(price, taxRate) * BigInt(weeks),
     });
-
-    setTxHash(txHash);
   };
 
+  const { data: permissionGrantedToMarketplace } =
+    useReadCfAv1ForwarderGetFlowOperatorPermissions({
+      address: cfaV1,
+      args: address && [ethx, address, marketplace],
+      query: {
+        enabled: Boolean(address),
+        select: (data) => {
+          console.log(data);
+          return data[0] === 7;
+        },
+      },
+    });
+
+  useWatchDirectListingsLogicNewSaleEvent({
+    args: {
+      listingId: listing?.listingIdBigInt,
+    },
+    onLogs: () => {
+      refetch();
+      refetchOwner();
+    },
+  });
+
+  const { data: buyRequest, error } =
+    useSimulateDirectListingsLogicBuyFromListing({
+      args: getSimulationArgs<BuyFromListinArgs>([
+        listing?.listingIdBigInt,
+        address,
+        BigInt(1),
+        NATIVE_CURRENCY,
+        listing?.pricePerToken,
+      ]),
+      value: listing?.pricePerToken,
+      query: {
+        enabled:
+          allDefined(owner, address, listing?.listingIdBigInt) &&
+          address?.toLowerCase() !== owner?.toLowerCase(),
+      },
+    });
+
+  const { writeContract } = useWriteContract();
+
   return (
-    <div>
-      <h1>Listing: {listing?.listingId}</h1>
-      <p>Owner {owner}</p>
-      <p>Asset price {listing?.price} ETH</p>
-      <p>Tax Rate: {`${listing?.taxRate}% / week`}</p>
-      <Button
-        onClick={() => {
-          buy();
-        }}
-      >
-        BUY
-      </Button>
-      {txHash && (
-        <Link target="_blank" href={getExplorerLink(txHash, "tx")}>
-          Transaction Hash: {txHash}
-        </Link>
-      )}
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Listing: {listing?.listingId}</CardTitle>
+        <p>Owner {owner}</p>
+        <p>Asset price {listing?.price} ETH</p>
+        <p>Tax Rate: {`${listing?.taxRate}% / week`}</p>
+      </CardHeader>
+      <CardContent></CardContent>
+      <CardFooter>
+        <div className="flex flex-col gap-4 w-full">
+          {!permissionGrantedToMarketplace && (
+            <Button
+              onClick={() => {
+                grantPermission();
+              }}
+            >
+              Grant Permission
+            </Button>
+          )}
+          <div className="flex flex-row gap-4">
+            <Slider
+              defaultValue={[0]}
+              max={10}
+              step={1}
+              onValueChange={(value) => {
+                setNumberOfWeeks(value[0]);
+              }}
+            />
+            <Button
+              onClick={() => {
+                depositRent(numberOfWeeks);
+              }}
+            >
+              Deposit Rent: {numberOfWeeks} weeks
+            </Button>
+          </div>
+          <Button
+            disabled={!Boolean(buyRequest?.request)}
+            onClick={() => {
+              writeContract(buyRequest!.request);
+            }}
+          >
+            Take over lease
+          </Button>
+        </div>
+      </CardFooter>
+    </Card>
   );
 };
 
