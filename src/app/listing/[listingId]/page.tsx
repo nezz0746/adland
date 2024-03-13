@@ -11,12 +11,10 @@ import {
 import { Slider } from "@/components/ui/slider";
 import {
   directListingsLogicAbi,
-  useReadCfAv1ForwarderGetFlowOperatorPermissions,
   useReadDirectListingsLogicGetListing,
   useReadErc721OwnerOf,
   useSimulateDirectListingsLogicBuyFromListing,
   useWatchDirectListingsLogicNewSaleEvent,
-  useWriteCfAv1ForwarderGrantPermissions,
   useWriteIsethUpgradeByEth,
 } from "@/generated";
 import useAppContracts from "@/hooks/useAppContracts";
@@ -35,7 +33,7 @@ type BuyFromListinArgs = ContractFunctionArgs<
 
 const ListingPage = () => {
   const { address } = useAccount();
-  const { ethx, cfaV1, marketplace } = useAppContracts();
+  const { ethx } = useAppContracts();
   const { listingId } = useParams();
   const [numberOfWeeks, setNumberOfWeeks] = useState<number>(1);
 
@@ -65,17 +63,7 @@ const ListingPage = () => {
     },
   });
 
-  const { writeContractAsync: callGrantPermission } =
-    useWriteCfAv1ForwarderGrantPermissions();
-
   const { writeContract: callUpgradeByEth } = useWriteIsethUpgradeByEth();
-
-  const grantPermission = () => {
-    callGrantPermission({
-      address: cfaV1,
-      args: [ethx, marketplace],
-    });
-  };
 
   const depositRent = (weeks: number) => {
     const price = listing?.pricePerToken;
@@ -89,19 +77,6 @@ const ListingPage = () => {
       value: getWeeklyTaxDue(price, taxRate) * BigInt(weeks),
     });
   };
-
-  const { data: permissionGrantedToMarketplace } =
-    useReadCfAv1ForwarderGetFlowOperatorPermissions({
-      address: cfaV1,
-      args: address && [ethx, address, marketplace],
-      query: {
-        enabled: Boolean(address),
-        select: (data) => {
-          console.log(data);
-          return data[0] === 7;
-        },
-      },
-    });
 
   useWatchDirectListingsLogicNewSaleEvent({
     args: {
@@ -143,15 +118,6 @@ const ListingPage = () => {
       <CardContent></CardContent>
       <CardFooter>
         <div className="flex flex-col gap-4 w-full">
-          {!permissionGrantedToMarketplace && (
-            <Button
-              onClick={() => {
-                grantPermission();
-              }}
-            >
-              Grant Permission
-            </Button>
-          )}
           <div className="flex flex-row gap-4">
             <Slider
               defaultValue={[0]}
