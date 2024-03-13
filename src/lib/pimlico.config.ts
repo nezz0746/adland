@@ -54,3 +54,34 @@ export const _handleBundlerErrors = (e: unknown) => {
   }
   console.error(e);
 };
+
+// DEPRECATED TX ENCODING
+// type Transaction = { to: Address; value: bigint; data: `0x${string}` };
+// const grantPermissionToMarketplace: Transaction = {
+//   to: cfaV1,
+//   data: encodeFunctionData({
+//     abi: cfAv1ForwarderAbi,
+//     functionName: "grantPermissions",
+//     args: [ethx, marketplace],
+//   }),
+//   value: BigInt(0),
+// };
+// const upgradeEthToEthx: Transaction = {
+//   to: ethx,
+//   data: encodeFunctionData({
+//     abi: isethAbi,
+//     functionName: "upgradeByETH",
+//     args: undefined,
+//   }),
+//   value: getWeeklyTaxDue(price, taxRate),
+// };
+
+// const buyFromListing: Transaction = {
+//   to: marketplace,
+//   data: encodeFunctionData({
+//     abi: directListingsLogicAbi,
+//     functionName: "buyFromListing",
+//     args: [listingId, ssaAddress, BigInt(1), NATIVE_CURRENCY, price],
+//   }),
+//   value: price,
+// };

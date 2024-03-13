@@ -20,17 +20,15 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider initialChain={initialChain}>
-          <PimlicoProvider>
-            <nav className="p-4 flex flex-row justify-between">
-              <Link href={"/"} className="text-xl font-bold">
-                <Button variant="outline">App</Button>
-              </Link>
-              <ConnectButton />
-            </nav>
-            <Separator />
-            <main className="p-4 flex flex-col gap-2">{children}</main>
-            <Toaster />
-          </PimlicoProvider>
+          <nav className="p-4 flex flex-row justify-between">
+            <Link href={"/"} className="text-xl font-bold">
+              <Button variant="outline">App</Button>
+            </Link>
+            <ConnectButton />
+          </nav>
+          <Separator />
+          <main className="p-4 flex flex-col gap-2">{children}</main>
+          <Toaster />
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
