@@ -42,7 +42,7 @@ contract ListingBase is DSTestFull, IExtension {
     function setUp() public {
         vm.etch(ERC1820RegistryCompiled.at, ERC1820RegistryCompiled.bin);
 
-        vm.createSelectFork("sepolia");
+        // vm.createSelectFork("sepolia");
 
         _deployWETH();
         _deployStreamingUtils();
@@ -53,7 +53,7 @@ contract ListingBase is DSTestFull, IExtension {
 
         vm.label(address(marketplace), "marketplace");
 
-        adCommons = new AdCommonOwnership(address(marketplace));
+        adCommons = new AdCommonOwnership(address(marketplace), "");
 
         _grantTaxManagerRole(deployer);
 
@@ -102,6 +102,8 @@ contract ListingBase is DSTestFull, IExtension {
             SuperfluidFrameworkDeployer sfDeployer = new SuperfluidFrameworkDeployer();
             sfDeployer.deployTestFramework();
             sf = sfDeployer.getFramework();
+
+            cfa = sf.cfa;
 
             (dai, daix) = sfDeployer.deployWrapperSuperToken(
                 "Fake DAI",

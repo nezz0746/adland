@@ -77,7 +77,8 @@ contract MarketplaceScript is BaseScript, IExtension {
         _saveDeployment(address(marketplace), "DirectListingsLogic");
 
         AdCommonOwnership adCommons = new AdCommonOwnership(
-            address(marketplace)
+            address(marketplace),
+            "ipfs://QmVg1sVvrWJ78cEmuxKpnHDKCWcCM8y8VaAJ8gpfe55ut6"
         );
 
         _saveDeployment(address(adCommons), "AdCommonOwnership");
