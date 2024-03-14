@@ -4,11 +4,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { readContract } from "viem/actions";
 import { client } from "../../services";
 import { formatAd } from "../../helpers";
+import { GetAdReturnType } from "@/lib/types";
 
 type GetAdsRouteParams = { params: { listingId: string } };
 
+const fetchJSON = async (url: string) => {
+  return fetch(url).then((res) => {
+    return res.json();
+  });
+};
+
 export async function GET(_req: NextRequest, { params }: GetAdsRouteParams) {
-  return readContract(client, {
+  const res = await readContract(client, {
     address:
       adCommonOwnershipAddress[
         initialChain.id as keyof typeof adCommonOwnershipAddress
@@ -16,7 +23,10 @@ export async function GET(_req: NextRequest, { params }: GetAdsRouteParams) {
     abi: adCommonOwnershipAbi,
     functionName: "getAd",
     args: [BigInt(parseInt(params.listingId))],
-  })
-    .then(formatAd)
-    .then((res) => NextResponse.json(res));
+  }).then(formatAd);
+
+  return NextResponse.json<GetAdReturnType>({
+    ...res,
+    metadata: res.gatewayUri ? await fetchJSON(res.gatewayUri) : null,
+  });
 }

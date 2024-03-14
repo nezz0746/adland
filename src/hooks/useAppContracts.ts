@@ -1,4 +1,7 @@
-import { directListingsLogicAddress } from "@/generated";
+import {
+  adCommonOwnershipAddress,
+  directListingsLogicAddress,
+} from "@/generated";
 import {
   AppChainIds,
   initialChain,
@@ -13,6 +16,7 @@ const useAppContracts = () => {
     daix: superfluidAddresses[appChain.id as AppChainIds].daix,
     cfaV1: superfluidAddresses[appChain.id as AppChainIds].cfaV1,
     marketplace: directListingsLogicAddress[appChain.id as AppChainIds],
+    adCommonOwnership: adCommonOwnershipAddress[appChain.id as AppChainIds],
   };
 };
 

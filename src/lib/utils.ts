@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Address, Chain } from "viem";
-import { initialChain } from "./constants";
+import { initialChain, ipfsGateway } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -18,6 +18,10 @@ export const getExplorerLink = (
   chain: Chain = initialChain
 ) => {
   return `${chain?.blockExplorers?.default?.url}/${path}/${data}`;
+};
+
+export const getGatewayUri = (ipfsURI: string) => {
+  return `${ipfsGateway}/${ipfsURI.split("ipfs://")[1]}`;
 };
 
 export const getWeeklyTaxDue = (price: bigint, taxRate: bigint) => {

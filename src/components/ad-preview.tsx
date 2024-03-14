@@ -1,8 +1,18 @@
+import { GetAdReturnType } from "@/lib/types";
+import { getGatewayUri } from "@/lib/utils";
 import classNames from "classnames";
 import Image from "next/image";
 
-const AdImage = ({ uri }: { uri?: string }) => {
-  const src = uri ? uri : "/logo.jpg";
+const AdPreview = ({ ad }: { ad?: GetAdReturnType }) => {
+  if (!ad) return null;
+
+  const { uri, metadata } = ad;
+
+  if (!metadata) return null;
+
+  const { image } = metadata;
+
+  const src = uri !== "" ? getGatewayUri(image) : "/logo.jpg";
 
   return (
     <div className="relative h-full aspect-square m-auto border w-full">
@@ -24,4 +34,4 @@ const AdImage = ({ uri }: { uri?: string }) => {
   );
 };
 
-export default AdImage;
+export default AdPreview;
