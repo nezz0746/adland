@@ -3,9 +3,9 @@ pragma solidity ^0.8.19;
 
 import {IDirectListings} from "contracts/prebuilts/marketplace/IMarketplace.sol";
 import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
-import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ERC721Royalty, ERC721} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
 
-contract AdCommonOwnership is ERC721 {
+contract AdCommonOwnership is ERC721Royalty {
     uint256 constant MAX_BPS = 10_000;
 
     uint256 constant MAX_GROUP_SIZE = 20;
@@ -18,18 +18,28 @@ contract AdCommonOwnership is ERC721 {
         uint256 endListingId;
     }
 
+    struct Ad {
+        string uri;
+    }
+
+    string public placeholderURI;
+
     uint256 public group;
 
     mapping(uint256 => AdGroup) adGroups;
 
-    mapping(uint256 => string) adUris;
+    mapping(uint256 => Ad) ads;
 
     event AdGroupCreated(uint256 group, address beneficiary, uint8 size);
 
     event AdUriSet(uint256 listingId, string uri);
 
-    constructor(address _marketplace) ERC721("AdCommonOwnership", "ACO") {
+    constructor(
+        address _marketplace,
+        string memory _placeholderURI
+    ) ERC721("AdCommonOwnership", "ACO") {
         marketplace = IDirectListings(_marketplace);
+        placeholderURI = _placeholderURI;
     }
 
     /// @notice Create a group of listings and transfer them to a beneficiary
@@ -99,9 +109,18 @@ contract AdCommonOwnership is ERC721 {
             ownerOf(listingId) == msg.sender,
             "AdCommonOwnership: Not owner"
         );
-        adUris[listingId] = uri;
+        ads[listingId].uri = uri;
 
         emit AdUriSet(listingId, uri);
+    }
+
+    /**
+     * @dev Retrieves the Ad information for a given listing ID.
+     * @param listingId The ID of the listing.
+     * @return The Ad struct containing the information of the listing.
+     */
+    function getAd(uint256 listingId) public view returns (Ad memory) {
+        return ads[listingId];
     }
 
     /**
@@ -170,5 +189,9 @@ contract AdCommonOwnership is ERC721 {
                 msg.sender == address(marketplace),
             "NFT: Only marketplace can transfer"
         );
+    }
+
+    function tokenURI(uint256) public view override returns (string memory) {
+        return placeholderURI;
     }
 }

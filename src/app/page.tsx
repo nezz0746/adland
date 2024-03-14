@@ -20,54 +20,45 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  isethAbi,
   useReadAdCommonOwnershipGetAllGroups,
+  useReadCfAv1ForwarderGetAccountFlowrate,
   useReadSuperTokenBalanceOf,
-  useWatchIsethTokenUpgradedEvent,
+  useWriteIsethDowngradeToEth,
+  useWriteIsethUpgradeByEth,
 } from "@/generated";
-import { superfluidAddresses } from "@/lib/constants";
-import { useSmartAccount } from "@/lib/pimlico";
-import { truncateAddress } from "@/lib/utils";
+import useAppContracts from "@/hooks/useAppContracts";
+import FlowingBalance from "@/lib/superfluid";
 import { useRouter } from "next/navigation";
-import {
-  Address,
-  encodeFunctionData,
-  formatEther,
-  parseEther,
-  zeroAddress,
-} from "viem";
-import { useBalance, useSendTransaction } from "wagmi";
+import { formatEther, parseEther, zeroAddress } from "viem";
+import { useAccount, useBalance } from "wagmi";
 
 export default function Home() {
-  const { smartAccount } = useSmartAccount();
+  const { address } = useAccount();
+  const { ethx, cfaV1 } = useAppContracts();
 
   const { data: balanceData } = useBalance({
-    address: smartAccount?.account.address,
-
+    address,
     query: {
-      enabled: Boolean(smartAccount?.account.address),
+      enabled: Boolean(address),
     },
   });
 
-  const { data: ethXBalance, refetch } = useReadSuperTokenBalanceOf({
-    address: superfluidAddresses[11155111].ethx,
-    args: [smartAccount?.account?.address as Address],
+  const { data: ethXBalance } = useReadSuperTokenBalanceOf({
+    address: ethx,
+    args: address && [address],
     query: {
-      enabled: Boolean(smartAccount?.account.address),
+      enabled: Boolean(address),
     },
   });
 
-  useWatchIsethTokenUpgradedEvent({
-    address: superfluidAddresses[11155111].ethx,
-    args: {
-      account: smartAccount?.account.address,
-    },
-    onLogs: (logs) => {
-      refetch && refetch();
-    },
-  });
-
-  const { sendTransaction } = useSendTransaction({});
+  const { data: accountFlowRate, dataUpdatedAt } =
+    useReadCfAv1ForwarderGetAccountFlowrate({
+      address: cfaV1,
+      args: address && [ethx, address],
+      query: {
+        enabled: Boolean(address),
+      },
+    });
 
   const { push } = useRouter();
 
@@ -90,13 +81,14 @@ export default function Home() {
     },
   });
 
+  const { writeContract: upgradeByEth } = useWriteIsethUpgradeByEth();
+  const { writeContract: downgradeToEth } = useWriteIsethDowngradeToEth();
+
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>
-            Account: {truncateAddress(smartAccount?.account.address)}
-          </CardTitle>
+          <CardTitle>Account: {address}</CardTitle>
           <CardDescription>
             Your account and balance. Use the buttons to fund your account and
             upgrade your ETHx.
@@ -108,36 +100,29 @@ export default function Home() {
               <span>Balance: </span>
               {Number(formatEther(balanceData?.value ?? BigInt(0)))} ETH
             </p>
-            <p>
+            <div className="flex flex-roww gap-2">
               <span>Balance: </span>
-              {Number(formatEther(ethXBalance ?? BigInt(0)))} ETHx
-            </p>
+              {accountFlowRate !== undefined && ethXBalance !== undefined && (
+                <FlowingBalance
+                  startingBalance={ethXBalance}
+                  startingBalanceDate={new Date(dataUpdatedAt)}
+                  flowRate={accountFlowRate}
+                />
+              )}{" "}
+              ETHx
+            </div>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-row justify-between">
-          <Button
-            onClick={() => {
-              if (!smartAccount?.account.address) return;
-              sendTransaction({
-                to: smartAccount?.account.address,
-                value: parseEther("0.1"),
-              });
-            }}
-          >
-            Fund 0.1 ETH
-          </Button>
+        <CardFooter className="flex flex-row justify-end">
           <div className="flex flex-row gap-2">
             <Button
               onClick={() => {
-                if (!smartAccount?.account.address) return;
-                smartAccount.sendTransaction({
-                  to: superfluidAddresses[11155111].ethx,
+                if (!address) return;
+
+                upgradeByEth({
+                  address: ethx,
+                  args: undefined,
                   value: parseEther("0.01"),
-                  data: encodeFunctionData({
-                    abi: isethAbi,
-                    functionName: "upgradeByETH",
-                    args: undefined,
-                  }),
                 });
               }}
             >
@@ -145,15 +130,11 @@ export default function Home() {
             </Button>
             <Button
               onClick={() => {
-                if (!smartAccount?.account.address || !ethXBalance) return;
-                smartAccount.sendTransaction({
-                  to: superfluidAddresses[11155111].ethx,
-                  // value: ethXBalance,
-                  data: encodeFunctionData({
-                    abi: isethAbi,
-                    functionName: "downgradeToETH",
-                    args: [ethXBalance],
-                  }),
+                if (!ethXBalance) return;
+
+                downgradeToEth({
+                  address: ethx,
+                  args: [ethXBalance],
                 });
               }}
             >

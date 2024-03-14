@@ -15,7 +15,8 @@ abstract contract BaseScript is Script {
     // @dev The chain we are deploying to.
     enum DeployementChain {
         Anvil,
-        Sepolia
+        Sepolia,
+        OptimismSepolia
     }
 
     // @dev The current chain we are deploying to.
@@ -35,6 +36,7 @@ abstract contract BaseScript is Script {
     constructor() {
         forks[DeployementChain.Anvil] = "local";
         forks[DeployementChain.Sepolia] = "sepolia";
+        forks[DeployementChain.OptimismSepolia] = "optsepolia";
     }
 
     modifier broadcast() {

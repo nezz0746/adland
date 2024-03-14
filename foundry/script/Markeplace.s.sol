@@ -13,13 +13,46 @@ import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {TestToken} from "@superfluid-finance/ethereum-contracts/contracts/utils/TestToken.sol";
 import {ISuperfluid, ISuperToken} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
 
+interface IPaymaster {
+    function deposit() external payable;
+}
+
 contract MarketplaceScript is BaseScript, IExtension {
     /// @dev utils
     WETH9 public weth;
+    ISuperToken daix;
+    ISuperToken ethx;
+    address cfav1;
+
     address wethSepolia = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9;
     address daixSepolia = 0x9Ce2062b085A2268E8d769fFC040f6692315fd2c;
     address ethXSepolia = 0x30a6933Ca9230361972E413a15dC8114c952414e;
     address cfav1Sepolia = 0x6836F23d6171D74Ef62FcF776655aBcD2bcd62Ef;
+
+    address wethOptimismSepolia = 0x74A4A85C611679B73F402B36c0F84A7D2CcdFDa3;
+    address daixOptimismSepolia = 0xD6FAF98BeFA647403cc56bDB598690660D5257d2;
+    address ethXOptimismSepolia = 0x0043d7c85C8b96a49A72A92C0B48CdC4720437d7;
+    address cfav1OptimismSepolia = 0x8a3170AdbC67233196371226141736E4151e7C26;
+
+    function _initialize() internal {
+        if (currentChain == DeployementChain.Sepolia) {
+            weth = WETH9(payable(wethSepolia));
+            daix = ISuperToken(daixSepolia);
+            ethx = ISuperToken(ethXSepolia);
+            cfav1 = cfav1Sepolia;
+        } else if (currentChain == DeployementChain.OptimismSepolia) {
+            weth = WETH9(payable(wethOptimismSepolia));
+            daix = ISuperToken(daixOptimismSepolia);
+            ethx = ISuperToken(ethXOptimismSepolia);
+            cfav1 = cfav1OptimismSepolia;
+        }
+    }
+
+    function deposit() public broadcastOn(DeployementChain.OptimismSepolia) {
+        IPaymaster(0xe3dc822D77f8cA7ac74c30B0dfFEA9FcDCAAA321).deposit{
+            value: 0.2 ether
+        }();
+    }
 
     function deployLocal() public broadcastOn(DeployementChain.Anvil) {
         weth = new WETH9();
@@ -31,8 +64,11 @@ contract MarketplaceScript is BaseScript, IExtension {
         _saveDeployment(address(marketplace), "DirectListingsLogic");
     }
 
-    function deploySepolia() public broadcastOn(DeployementChain.Sepolia) {
-        weth = WETH9(payable(wethSepolia));
+    function deployTestnet()
+        public
+        broadcastOn(DeployementChain.OptimismSepolia)
+    {
+        _initialize();
 
         (, address deployer, ) = vm.readCallers();
 
@@ -41,7 +77,8 @@ contract MarketplaceScript is BaseScript, IExtension {
         _saveDeployment(address(marketplace), "DirectListingsLogic");
 
         AdCommonOwnership adCommons = new AdCommonOwnership(
-            address(marketplace)
+            address(marketplace),
+            "ipfs://QmVg1sVvrWJ78cEmuxKpnHDKCWcCM8y8VaAJ8gpfe55ut6"
         );
 
         _saveDeployment(address(adCommons), "AdCommonOwnership");
@@ -49,9 +86,7 @@ contract MarketplaceScript is BaseScript, IExtension {
         console.log("Sender:grantRoleTo: ", deployer);
         _grantTaxManagerRole(address(marketplace), deployer);
 
-        ISuperToken daix = ISuperToken(daixSepolia);
         TestToken dai = TestToken(daix.getUnderlyingToken());
-        ISuperToken ethx = ISuperToken(ethXSepolia);
 
         _saveDeployment(address(ethx), "ETHx");
         _saveDeployment(address(daix), "DAIx");

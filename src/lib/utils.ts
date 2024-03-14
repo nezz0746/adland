@@ -23,3 +23,13 @@ export const getExplorerLink = (
 export const getWeeklyTaxDue = (price: bigint, taxRate: bigint) => {
   return (BigInt(price) * BigInt(taxRate)) / BigInt(10000);
 };
+
+export const allDefined = (...args: unknown[]): boolean => {
+  return args.every((arg) => arg !== undefined);
+};
+
+export const getSimulationArgs = <ArgT>(args: unknown[]): ArgT | undefined => {
+  if (!allDefined(...args)) return undefined;
+
+  return args as ArgT;
+};
