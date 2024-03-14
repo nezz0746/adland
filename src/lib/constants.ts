@@ -50,3 +50,5 @@ export const superfluidAddresses: Record<
 };
 
 export const NATIVE_CURRENCY = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+
+export const ipfsGateway = `https://${process.env.NEXT_PUBLIC_PINATA_GATEWAY_DOMAIN}/ipfs`;
