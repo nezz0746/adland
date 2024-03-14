@@ -16,14 +16,15 @@ import {
 } from "@/generated";
 import useAppContracts from "@/hooks/useAppContracts";
 import FlowingBalance from "@/lib/superfluid";
-import { getWeeklyTaxDue, truncateAddress } from "@/lib/utils";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { formatEther } from "viem";
-import classNames from "classnames";
+
+import AdSpaceCard from "@/components/ad-space-card";
+import { useState } from "react";
+import AccountLink from "@/components/account-link";
 
 const GroupPage = () => {
   const { ethx, cfaV1 } = useAppContracts();
-  const { push } = useRouter();
   const { id } = useParams();
 
   const { data: adGroup, isSuccess } = useReadAdCommonOwnershipGetAdGroup({
@@ -55,14 +56,6 @@ const GroupPage = () => {
     args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
     query: {
       enabled: isSuccess,
-      select: (data) => {
-        return data.map((listing) => {
-          return {
-            ...listing,
-            listingId: Number(listing.listingId),
-          };
-        });
-      },
     },
   });
 
@@ -81,7 +74,9 @@ const GroupPage = () => {
           <CardTitle>Group #{id}</CardTitle>
           <CardDescription>
             Ad Group of size {adGroup?.size} for beneficiary{" "}
-            {truncateAddress(adGroup?.beneficiary)}
+            {adGroup?.beneficiary && (
+              <AccountLink address={adGroup?.beneficiary} />
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -107,47 +102,16 @@ const GroupPage = () => {
       </Card>
       <Separator />
       <div className="grid grid-cols-3 gap-2">
-        {listings?.map((listing, index) => {
-          const ownerIsBeneficiary =
-            listing.listingOwner == adGroup?.beneficiary;
-
-          return (
-            <Card
-              className={classNames("cursor-pointer", {
-                "bg-gray-200": ownerIsBeneficiary,
-              })}
-              onClick={() => {
-                push(`/listing/${listing.listingId}`);
-              }}
-            >
-              <CardHeader>
-                <div className="flex flex-row justify-between">
-                  <CardTitle>Ad Space #{index + 1}</CardTitle>
-                </div>
-                <CardDescription>
-                  <p>
-                    Owner:{" "}
-                    {ownerIsBeneficiary
-                      ? "_"
-                      : truncateAddress(listing.listingOwner)}
-                  </p>
-                  <p>
-                    Streaming Rent:{" "}
-                    {!ownerIsBeneficiary
-                      ? formatEther(
-                          getWeeklyTaxDue(
-                            listing.pricePerToken,
-                            listing.taxRate
-                          )
-                        ) + " ETH"
-                      : 0}{" "}
-                    / week
-                  </p>
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          );
-        })}
+        {adGroup &&
+          listings?.map((listing) => {
+            return (
+              <AdSpaceCard
+                key={listing.listingId}
+                listing={listing}
+                adGroup={adGroup}
+              />
+            );
+          })}
       </div>
     </div>
   );
