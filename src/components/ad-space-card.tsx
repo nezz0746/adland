@@ -37,6 +37,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { uploadFile } from "@/lib/file";
 import { ipfsGateway } from "@/lib/constants";
+import { Separator } from "./ui/separator";
 
 type AdSpaceCardProps = { listing: Listing; adGroup: AdGroup };
 
@@ -46,10 +47,26 @@ type SetAdURIArgs = ContractFunctionArgs<
   "setAdUri"
 >;
 
-const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
+const AdSpaceCard = ({
+  listing: {
+    assetContract,
+    tokenId,
+    quantity,
+    currency,
+    taxRate,
+    taxBeneficiary,
+    startTimestamp,
+    endTimestamp,
+    pricePerToken,
+    reserved,
+    listingId,
+    listingOwner,
+  },
+  adGroup,
+}: AdSpaceCardProps) => {
   const { address } = useAccount();
   const [newPricePerToken, setNewPricePerToken] = useState<number>(
-    parseFloat(formatEther(listing.pricePerToken))
+    parseFloat(formatEther(pricePerToken))
   );
   const [image, setImage] = useState<{
     file: File;
@@ -57,12 +74,13 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
     url: string;
   } | null>(null);
 
-  const ownerIsBeneficiary = listing.listingOwner === adGroup?.beneficiary;
-  const isOwner = address === listing.listingOwner;
-  const spaceNumber = Number(listing.listingId - adGroup.startListingId) + 1;
+  const ownerIsBeneficiary = listingOwner === adGroup?.beneficiary;
+  const isOwner = address === listingOwner;
+  const isBeneficiary = address === adGroup?.beneficiary;
+  const spaceNumber = Number(listingId - adGroup.startListingId) + 1;
 
   const { data: ad, refetch } = useReadAdCommonOwnershipGetAd({
-    args: [listing.listingId],
+    args: [listingId],
     query: {
       select: (data) => {
         const uri = data.uri === "" ? undefined : data.uri;
@@ -96,7 +114,7 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
   };
 
   const { data: setAdUriRequest } = useSimulateAdCommonOwnershipSetAdUri({
-    args: getSimulationArgs<SetAdURIArgs>([listing.listingId, image?.url]),
+    args: getSimulationArgs<SetAdURIArgs>([listingId, image?.url]),
     query: {
       enabled: image !== null,
     },
@@ -112,22 +130,10 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
     refetch();
   };
 
-  const {
-    assetContract,
-    tokenId,
-    quantity,
-    currency,
-    taxRate,
-    taxBeneficiary,
-    startTimestamp,
-    endTimestamp,
-    reserved,
-  } = listing;
-
   const { data: selfAssessRequest } =
     useSimulateDirectListingsLogicUpdateListing({
       args: [
-        listing.listingId,
+        listingId,
         {
           tokenId,
           assetContract,
@@ -147,18 +153,17 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
     writeContractAsync(selfAssessRequest!.request);
   };
 
-  const adURI = ad?.uri;
-
   return (
-    <Card
-      className={classNames({
-        "bg-gray-200": ownerIsBeneficiary,
-      })}
-    >
+    <Card className={classNames({ "bg-gray-200": ownerIsBeneficiary })}>
       <CardHeader>
         <div className="flex flex-row justify-between">
           <CardTitle>Ad Space #{spaceNumber}</CardTitle>
+          <p className="text-lg">
+            Price:{" "}
+            <span className="font-bold">{formatEther(pricePerToken)} ETH</span>
+          </p>
         </div>
+        <Separator />
         <CardDescription className="flex flex-row justify-between gap-2">
           <div>
             <p>
@@ -166,31 +171,21 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
               {ownerIsBeneficiary ? (
                 "_"
               ) : (
-                <AccountLink address={listing.listingOwner} />
+                <AccountLink address={listingOwner} />
               )}
             </p>
             <p>
               Streaming Rent:{" "}
               {!ownerIsBeneficiary
-                ? formatEther(
-                    getWeeklyTaxDue(listing.pricePerToken, listing.taxRate)
-                  ) + " ETH"
+                ? formatEther(getWeeklyTaxDue(pricePerToken, taxRate)) + " ETH"
                 : 0}{" "}
               / week
-            </p>
-          </div>
-          <div>
-            <p className="text-lg">
-              Price:{" "}
-              <span className="font-bold">
-                {formatEther(listing.pricePerToken)} ETH
-              </span>
             </p>
           </div>
         </CardDescription>
       </CardHeader>
       <CardContent className="h-[250px] p-4">
-        {isOwner && <AdImage uri={ad?.gatewayURI} />}
+        <AdImage uri={ad?.gatewayURI} />
       </CardContent>
       <CardFooter className="flex flex-col justify-end">
         {isOwner && (
@@ -250,9 +245,7 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
                   <Input
                     type="number"
                     value={newPricePerToken}
-                    defaultValue={parseFloat(
-                      formatEther(listing.pricePerToken)
-                    )}
+                    defaultValue={parseFloat(formatEther(pricePerToken))}
                     onChange={(e) =>
                       setNewPricePerToken(Number(e.target.value))
                     }
@@ -279,7 +272,10 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
           <div className="flex flex-row gap-2 w-full">
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="flex flex-row gap-2 w-full">
+                <Button
+                  disabled={isBeneficiary}
+                  className="flex flex-row gap-2 w-full"
+                >
                   <BadgeDollarSign className="w-4 h-4" />
                   Acquire Lease
                 </Button>
@@ -296,7 +292,7 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
                     </ul>
                   </DialogDescription>
                 </DialogHeader>
-                <AcquireLeaseActions listingId={listing.listingId} />
+                <AcquireLeaseActions listingId={listingId} />
               </DialogContent>
             </Dialog>
           </div>
