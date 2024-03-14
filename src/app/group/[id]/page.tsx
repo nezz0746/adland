@@ -20,7 +20,6 @@ import { useParams } from "next/navigation";
 import { formatEther } from "viem";
 
 import AdSpaceCard from "@/components/ad-space-card";
-import { useState } from "react";
 import AccountLink from "@/components/account-link";
 
 const GroupPage = () => {
