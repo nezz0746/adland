@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { ContractFunctionArgs, formatEther } from "viem";
+import { ContractFunctionArgs, formatEther, parseEther } from "viem";
 import { useAccount, useWriteContract } from "wagmi";
 import { getSimulationArgs, getWeeklyTaxDue } from "@/lib/utils";
 import AcquireLeaseActions from "./acquire-lease-actions";
@@ -28,6 +28,7 @@ import {
   adCommonOwnershipAbi,
   useReadAdCommonOwnershipGetAd,
   useSimulateAdCommonOwnershipSetAdUri,
+  useSimulateDirectListingsLogicUpdateListing,
 } from "@/generated";
 import AccountLink from "./account-link";
 import { DialogDescription } from "@radix-ui/react-dialog";
@@ -47,6 +48,9 @@ type SetAdURIArgs = ContractFunctionArgs<
 
 const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
   const { address } = useAccount();
+  const [newPricePerToken, setNewPricePerToken] = useState<number>(
+    parseFloat(formatEther(listing.pricePerToken))
+  );
   const [image, setImage] = useState<{
     file: File;
     gatewayURL: string;
@@ -106,6 +110,41 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
     await writeContractAsync(setAdUriRequest!.request);
 
     refetch();
+  };
+
+  const {
+    assetContract,
+    tokenId,
+    quantity,
+    currency,
+    taxRate,
+    taxBeneficiary,
+    startTimestamp,
+    endTimestamp,
+    reserved,
+  } = listing;
+
+  const { data: selfAssessRequest } =
+    useSimulateDirectListingsLogicUpdateListing({
+      args: [
+        listing.listingId,
+        {
+          tokenId,
+          assetContract,
+          quantity,
+          currency,
+          taxRate,
+          taxBeneficiary,
+          pricePerToken: parseEther(newPricePerToken.toString()),
+          startTimestamp,
+          endTimestamp,
+          reserved,
+        },
+      ],
+    });
+
+  const selfAssess = async () => {
+    writeContractAsync(selfAssessRequest!.request);
   };
 
   const adURI = ad?.uri;
@@ -198,7 +237,7 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
             </Dialog>
             <Dialog>
               <DialogTrigger asChild>
-                <Button disabled className="flex flex-row gap-2 w-full">
+                <Button className="flex flex-row gap-2 w-full">
                   <CircleDollarSign className="w-4 h-4" />
                   Self Assess Price
                 </Button>
@@ -207,10 +246,30 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
                 <DialogHeader>
                   <DialogTitle>Self Assess</DialogTitle>
                 </DialogHeader>
+                <div>
+                  <Input
+                    type="number"
+                    value={newPricePerToken}
+                    defaultValue={parseFloat(
+                      formatEther(listing.pricePerToken)
+                    )}
+                    onChange={(e) =>
+                      setNewPricePerToken(Number(e.target.value))
+                    }
+                  />
+                </div>
                 <DialogFooter>
                   <DialogClose asChild>
                     <Button variant={"outline"}>Cancel</Button>
                   </DialogClose>
+                  <Button
+                    disabled={!Boolean(selfAssessRequest?.request)}
+                    onClick={() => {
+                      selfAssess();
+                    }}
+                  >
+                    Reassess
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
