@@ -7,11 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { formatEther } from "viem";
-import { useAccount } from "wagmi";
-import { getWeeklyTaxDue } from "@/lib/utils";
+import { ContractFunctionArgs, formatEther } from "viem";
+import { useAccount, useWriteContract } from "wagmi";
+import { getSimulationArgs, getWeeklyTaxDue } from "@/lib/utils";
 import AcquireLeaseActions from "./acquire-lease-actions";
-import AdPlaceholder from "./ad-placeholder";
+import AdImage from "./ad-image";
 import { AdGroup, Listing } from "@/lib/types";
 import { Button } from "./ui/button";
 import { BadgeDollarSign, CircleDollarSign, ImagePlusIcon } from "lucide-react";
@@ -24,22 +24,89 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useReadAdCommonOwnershipGetAd } from "@/generated";
+import {
+  adCommonOwnershipAbi,
+  useReadAdCommonOwnershipGetAd,
+  useSimulateAdCommonOwnershipSetAdUri,
+} from "@/generated";
 import AccountLink from "./account-link";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import { Input } from "./ui/input";
+import { useState } from "react";
+import Image from "next/image";
+import { uploadFile } from "@/lib/file";
+import { ipfsGateway } from "@/lib/constants";
 
 type AdSpaceCardProps = { listing: Listing; adGroup: AdGroup };
 
+type SetAdURIArgs = ContractFunctionArgs<
+  typeof adCommonOwnershipAbi,
+  "nonpayable",
+  "setAdUri"
+>;
+
 const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
   const { address } = useAccount();
+  const [image, setImage] = useState<{
+    file: File;
+    gatewayURL: string;
+    url: string;
+  } | null>(null);
 
   const ownerIsBeneficiary = listing.listingOwner === adGroup?.beneficiary;
   const isOwner = address === listing.listingOwner;
   const spaceNumber = Number(listing.listingId - adGroup.startListingId) + 1;
 
-  const { data: ad } = useReadAdCommonOwnershipGetAd({
+  const { data: ad, refetch } = useReadAdCommonOwnershipGetAd({
     args: [listing.listingId],
+    query: {
+      select: (data) => {
+        const uri = data.uri === "" ? undefined : data.uri;
+        const gatewayURI =
+          uri !== undefined
+            ? uri.replace("ipfs://", `${ipfsGateway}/`)
+            : undefined;
+
+        return {
+          ...data,
+          uri,
+          gatewayURI,
+        };
+      },
+    },
   });
+
+  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const hash = await uploadFile(file);
+
+      console.log(hash);
+
+      setImage({
+        file,
+        url: `ipfs://${hash}`,
+        gatewayURL: `${ipfsGateway}/${hash}`,
+      });
+    }
+  };
+
+  const { data: setAdUriRequest } = useSimulateAdCommonOwnershipSetAdUri({
+    args: getSimulationArgs<SetAdURIArgs>([listing.listingId, image?.url]),
+    query: {
+      enabled: image !== null,
+    },
+  });
+
+  const { writeContractAsync } = useWriteContract();
+
+  const submitAdData = async () => {
+    if (!image) return;
+
+    await writeContractAsync(setAdUriRequest!.request);
+
+    refetch();
+  };
 
   const adURI = ad?.uri;
 
@@ -84,14 +151,14 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent className="h-[250px] p-4">
-        {isOwner && <AdPlaceholder />}
+        {isOwner && <AdImage uri={ad?.gatewayURI} />}
       </CardContent>
       <CardFooter className="flex flex-col justify-end">
         {isOwner && (
-          <div className="flex flex-row gap-2 w-full">
+          <div className="grid grid-cols-2 gap-2 w-full">
             <Dialog>
               <DialogTrigger asChild>
-                <Button disabled className="flex flex-row gap-2 w-full">
+                <Button className="flex flex-row gap-2 w-full">
                   <ImagePlusIcon className="w-4 h-4" />
                   Upload new ad
                 </Button>
@@ -100,10 +167,32 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
                 <DialogHeader>
                   <DialogTitle>Upload new advertising content</DialogTitle>
                 </DialogHeader>
+                <div className="">
+                  {image && (
+                    <Image
+                      src={image.gatewayURL}
+                      alt="Uploaded image"
+                      width={200}
+                      height={200}
+                    />
+                  )}
+                  <Input
+                    className="cursor-pointer hover:bg-slate-100"
+                    id="picture"
+                    type="file"
+                    onChange={onFileChange}
+                  />
+                </div>
                 <DialogFooter>
                   <DialogClose asChild>
                     <Button variant={"outline"}>Cancel</Button>
                   </DialogClose>
+                  <Button
+                    disabled={!Boolean(setAdUriRequest?.request)}
+                    onClick={submitAdData}
+                  >
+                    Upload
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
