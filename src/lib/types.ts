@@ -12,3 +12,9 @@ export type AdGroup = ContractFunctionReturnType<
   "view",
   "getAdGroup"
 >;
+
+export type Ad = ContractFunctionReturnType<
+  typeof adCommonOwnershipAbi,
+  "view",
+  "getAd"
+>;

@@ -52,3 +52,8 @@ export const superfluidAddresses: Record<
 export const NATIVE_CURRENCY = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
 export const ipfsGateway = `https://${process.env.NEXT_PUBLIC_PINATA_GATEWAY_DOMAIN}/ipfs`;
+
+export const alchemyUrlByChain: Record<number, string> = {
+  [sepolia.id]: `https://eth-sepolia.g.alchemy.com/v2/${alchemyKey}`,
+  [optimismSepolia.id]: `https://opt-sepolia.g.alchemy.com/v2/${alchemyKey}`,
+};
