@@ -10,7 +10,7 @@ const AdPreview = ({ ad }: { ad?: GetAdReturnType }) => {
 
   if (!metadata) return null;
 
-  const { image } = metadata;
+  const { image, animation_url } = metadata;
 
   const src = uri !== "" ? getGatewayUri(image) : "/logo.jpg";
 
@@ -21,15 +21,25 @@ const AdPreview = ({ ad }: { ad?: GetAdReturnType }) => {
           <p className="font-black text-4xl -rotate-45">NO AD</p>
         </div>
       )}
-      <Image
-        src={src}
-        alt=""
-        width={400}
-        height={400}
-        className={classNames("h-full w-full object-contain", {
-          "opacity-30": !uri,
-        })}
-      />
+      {animation_url ? (
+        <video
+          className="h-full w-full object-contain"
+          controls
+          preload="nonde"
+        >
+          <source src={getGatewayUri(animation_url)} type="video/mp4"></source>
+        </video>
+      ) : (
+        <Image
+          src={src}
+          alt=""
+          width={400}
+          height={400}
+          className={classNames("h-full w-full object-contain", {
+            "opacity-30": !uri,
+          })}
+        />
+      )}
     </div>
   );
 };

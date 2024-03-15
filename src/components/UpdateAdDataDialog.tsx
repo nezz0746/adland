@@ -20,7 +20,7 @@ import { uploadFile } from "@/lib/file";
 import { getGatewayUri, getSimulationArgs } from "@/lib/utils";
 import { ContractFunctionArgs } from "viem";
 import { useWriteContract } from "wagmi";
-import { AdGroup, GetAdReturnType, Listing } from "@/lib/types";
+import { AdGroup, GetAdReturnType, Listing, Metadata } from "@/lib/types";
 
 type UpdateAdDataDialogProps = {
   listing: Listing;
@@ -39,7 +39,7 @@ const UpdateAdDataDialog = ({
   ad,
   adGroup,
 }: UpdateAdDataDialogProps) => {
-  console.log(ad?.metadata?.description);
+  console.log(ad?.metadata);
   const { adCommonOwnership } = useAppContracts();
   const [description, setDescription] = useState<string>(
     ad?.metadata?.description ?? ""
@@ -51,12 +51,21 @@ const UpdateAdDataDialog = ({
   } | null>(
     ad?.metadata?.image && ad?.gatewayUri
       ? {
-          gatewayURL: getGatewayUri(ad?.metadata.image),
-          file: new File([""], ""),
+          gatewayURL: getGatewayUri(
+            ad?.metadata?.animation_url
+              ? ad?.metadata?.animation_url
+              : ad?.metadata?.image
+          ),
+          file: new File([""], "", {
+            type: ad?.metadata?.animation_url ? "video/mp4" : "image/png",
+          }),
           url: ad?.uri,
         }
       : null
   );
+
+  console.log(image);
+  console.log(image?.file.type.includes("video"));
 
   const spaceNumber = Number(listingId - adGroup.startListingId) + 1;
 
@@ -85,16 +94,17 @@ const UpdateAdDataDialog = ({
   const submitAdData = async () => {
     if (!image) return;
 
-    const metadata: File = new File(
-      [
-        JSON.stringify({
-          name: `Ad Space #${spaceNumber}`,
-          description,
-          image: image.url,
-        }),
-      ],
-      "metadata.json"
-    );
+    const data: Metadata = {
+      name: `Ad Space #${spaceNumber}`,
+      description,
+      image: image.url,
+    };
+
+    if (image.file.type.includes("video")) {
+      data.animation_url = image.url;
+    }
+
+    const metadata: File = new File([JSON.stringify(data)], "metadata.json");
 
     const hash = await uploadFile(metadata);
 
@@ -112,15 +122,20 @@ const UpdateAdDataDialog = ({
         <DialogTitle>Upload new advertising content</DialogTitle>
       </DialogHeader>
       <div className="flex flex-col gap-3">
-        {image && (
-          <Image
-            src={image.gatewayURL}
-            alt="Uploaded image"
-            width={200}
-            height={200}
-            className="border w-full"
-          />
-        )}
+        {image &&
+          (image.file.type.includes("video") ? (
+            <video className="w-full" controls preload="nonde">
+              <source src={image.gatewayURL} type="video/mp4"></source>
+            </video>
+          ) : (
+            <Image
+              src={image.gatewayURL}
+              alt="Uploaded image"
+              width={200}
+              height={200}
+              className="border w-full"
+            />
+          ))}
         <div className="w-full space-y-2">
           <Label htmlFor="email">Ad Text</Label>
           <Input

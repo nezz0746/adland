@@ -19,10 +19,11 @@ export type Ad = ContractFunctionReturnType<
   "getAd"
 >;
 
-type Metadata = {
+export type Metadata = {
   name: string;
   image: string;
   description: string;
+  animation_url?: string;
 };
 
 export type GetAdReturnType = Ad & {
