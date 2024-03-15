@@ -6,6 +6,8 @@ import { client } from "../../services";
 import { formatAd } from "../../helpers";
 import { GetAdReturnType } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 type GetAdsRouteParams = { params: { listingId: string } };
 
 const fetchJSON = async (url: string) => {
