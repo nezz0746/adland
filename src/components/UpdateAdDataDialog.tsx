@@ -22,6 +22,7 @@ import { ContractFunctionArgs } from "viem";
 import { useWriteContract } from "wagmi";
 import { AdGroup, GetAdReturnType, Listing, Metadata } from "@/lib/types";
 import { queryClient } from "@/app/providers";
+import { toast } from "sonner";
 
 type UpdateAdDataDialogProps = {
   listing: Listing;
@@ -89,15 +90,15 @@ const UpdateAdDataDialog = ({
     if (!image) return;
 
     const s = image.url.split("/");
-
+    const imageHash = s[s.length - 1];
     const data: Metadata = {
       name: `Ad Space #${spaceNumber}`,
       description,
-      image: `ipfs://${s[s.length - 1]}`,
+      image: `ipfs://${imageHash}`,
     };
 
     if (image.type === "video") {
-      data.animation_url = image.url;
+      data.animation_url = `ipfs://${imageHash}`;
     }
 
     const metadata: File = new File([JSON.stringify(data)], "metadata.json");
@@ -115,7 +116,7 @@ const UpdateAdDataDialog = ({
         onSuccess: () => {
           queryClient.setQueryData(
             ["ad-" + Number(listingId).toString()],
-            (old: GetAdReturnType) => {
+            () => {
               return {
                 uri: adIpfsURI,
                 gatewayUri: getGatewayUri(adIpfsURI),
@@ -123,6 +124,7 @@ const UpdateAdDataDialog = ({
               };
             }
           );
+          toast.success("Ad updated successfully");
         },
       }
     );
