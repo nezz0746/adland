@@ -18,3 +18,15 @@ export type Ad = ContractFunctionReturnType<
   "view",
   "getAd"
 >;
+
+export type Metadata = {
+  name: string;
+  image: string;
+  description: string;
+  animation_url?: string;
+};
+
+export type GetAdReturnType = Ad & {
+  gatewayUri: string | null;
+  metadata: Metadata | null;
+};

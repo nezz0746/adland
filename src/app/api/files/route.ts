@@ -1,11 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export async function POST(request: NextRequest) {
   try {
     const data = await request.formData();
@@ -20,7 +14,6 @@ export async function POST(request: NextRequest) {
       body: data,
     });
     const { IpfsHash } = await res.json();
-    console.log(IpfsHash);
 
     return NextResponse.json({ IpfsHash }, { status: 200 });
   } catch (e) {

@@ -285,8 +285,56 @@ contract ListingTest is ListingBase {
                 listing.endTimestamp,
                 listing.reserved
             );
+        address buyer = _getAccount(69, 1000 ether);
 
-        vm.prank(beneficiary);
+        _grantMaxFlowPermissions(ethx, buyer, address(marketplace));
+
+        _upgradeETH(ethx, buyer, _taxDuePerWeek(baseTaxRateBPS, initialPrice));
+
+        vm.prank(buyer);
+        marketplace.buyFromListing{value: initialPrice}(
+            1,
+            buyer,
+            DEFAULT_QUANTITY,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice
+        );
+
+        assertEq(
+            _computeAssetFlowRate(baseTaxRateBPS, initialPrice),
+            _getFlowRate(address(ethx), buyer, beneficiary)
+        );
+
+        console.log(
+            "flowBefore",
+            uint256(int256(_getFlowRate(address(ethx), buyer, beneficiary)))
+        );
+
+        vm.prank(buyer);
+        marketplace.updateListing(listing.listingId, priceChangeParams);
+
+        console.log(
+            "flowAfter",
+            uint256(int256(_getFlowRate(address(ethx), buyer, beneficiary)))
+        );
+
+        assertEq(
+            _computeAssetFlowRate(baseTaxRateBPS, newPrice),
+            _getFlowRate(address(ethx), buyer, beneficiary)
+        );
+
+        priceChangeParams.pricePerToken = initialPrice;
+
+        vm.prank(buyer);
+        marketplace.updateListing(listing.listingId, priceChangeParams);
+
+        assertEq(
+            _computeAssetFlowRate(baseTaxRateBPS, initialPrice),
+            _getFlowRate(address(ethx), buyer, beneficiary)
+        );
+
+        priceChangeParams.pricePerToken = newPrice;
+        vm.prank(buyer);
         marketplace.updateListing(listing.listingId, priceChangeParams);
 
         address buyer2 = _getAccount(96, 1000 ether);

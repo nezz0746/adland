@@ -8,7 +8,7 @@ import { localhost, optimismSepolia, sepolia } from "viem/chains";
 import { http } from "viem";
 
 export const config = getDefaultConfig({
-  appName: "Nezzar's AA Sandbox",
+  appName: "AdLand",
   projectId: walletConnectProjectId,
   chains: [localhost, initialChain],
   transports: {

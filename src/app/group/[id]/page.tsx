@@ -20,7 +20,6 @@ import { useParams } from "next/navigation";
 import { formatEther } from "viem";
 
 import AdSpaceCard from "@/components/ad-space-card";
-import { useState } from "react";
 import AccountLink from "@/components/account-link";
 
 const GroupPage = () => {
@@ -68,8 +67,8 @@ const GroupPage = () => {
   });
 
   return (
-    <div className="flex flex-col gap-2">
-      <Card>
+    <div className="flex flex-row items-start gap-2">
+      <Card className="fixed w-[400px]">
         <CardHeader>
           <CardTitle>Group #{id}</CardTitle>
           <CardDescription>
@@ -100,8 +99,7 @@ const GroupPage = () => {
           </p>
         </CardContent>
       </Card>
-      <Separator />
-      <div className="grid grid-cols-3 gap-2">
+      <div className="ml-[calc(400px+1em)] flex-grow grid grid-cols-2 gap-2">
         {adGroup &&
           listings?.map((listing) => {
             return (
