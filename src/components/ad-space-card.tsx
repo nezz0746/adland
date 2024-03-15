@@ -24,12 +24,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  adCommonOwnershipAbi,
-  useReadAdCommonOwnershipGetAd,
-  useSimulateAdCommonOwnershipSetAdUri,
-  useSimulateDirectListingsLogicUpdateListing,
-} from "@/generated";
+import { useSimulateDirectListingsLogicUpdateListing } from "@/generated";
 import AccountLink from "./account-link";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { Input } from "./ui/input";
@@ -37,6 +32,7 @@ import { useState } from "react";
 import { Separator } from "./ui/separator";
 import { useQuery } from "@tanstack/react-query";
 import UpdateAdDataDialog from "./UpdateAdDataDialog";
+import { Skeleton } from "./ui/skeleton";
 
 type AdSpaceCardProps = { listing: Listing; adGroup: AdGroup };
 
@@ -59,13 +55,11 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
   const [newPricePerToken, setNewPricePerToken] = useState<number>(
     parseFloat(formatEther(pricePerToken))
   );
-  const { data: ad, error } = useQuery<GetAdReturnType>({
+  const { data: ad, isLoading } = useQuery<GetAdReturnType>({
     queryKey: ["ad-" + Number(listingId).toString()],
     queryFn: () =>
       fetch(`/api/ad/${Number(listingId)}`).then((res) => res.json()),
   });
-
-  console.log("AD", { ad, error });
 
   const ownerIsBeneficiary = listingOwner === adGroup?.beneficiary;
   const isOwner = address === listingOwner;
@@ -129,12 +123,30 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent className="h-[250px] p-4">
+        {isLoading && <Skeleton className="h-full w-full border" />}
         {ad?.metadata && <AdPreview ad={ad} />}
       </CardContent>
       <CardFooter className="flex flex-col justify-end">
         {isOwner && (
           <div className="grid grid-cols-2 gap-2 w-full">
-            <UpdateAdDataDialog listing={listing} adGroup={adGroup} ad={ad} />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  disabled={isLoading}
+                  className="flex flex-row gap-2 w-full"
+                >
+                  <ImagePlusIcon className="w-4 h-4" />
+                  Update ad content
+                </Button>
+              </DialogTrigger>
+              {ad && (
+                <UpdateAdDataDialog
+                  listing={listing}
+                  adGroup={adGroup}
+                  ad={ad}
+                />
+              )}
+            </Dialog>
             <Dialog>
               <DialogTrigger asChild>
                 <Button className="flex flex-row gap-2 w-full">
