@@ -21,6 +21,7 @@ import { getGatewayUri, getSimulationArgs } from "@/lib/utils";
 import { ContractFunctionArgs } from "viem";
 import { useWriteContract } from "wagmi";
 import { AdGroup, GetAdReturnType, Listing, Metadata } from "@/lib/types";
+import { queryClient } from "@/app/providers";
 
 type UpdateAdDataDialogProps = {
   listing: Listing;
@@ -44,28 +45,22 @@ const UpdateAdDataDialog = ({
   const [description, setDescription] = useState<string>(
     ad?.metadata?.description ?? ""
   );
+
   const [image, setImage] = useState<{
-    file: File;
-    gatewayURL: string;
     url: string;
+    type: "video" | "image";
   } | null>(
     ad?.metadata?.image && ad?.gatewayUri
       ? {
-          gatewayURL: getGatewayUri(
+          url: getGatewayUri(
             ad?.metadata?.animation_url
               ? ad?.metadata?.animation_url
               : ad?.metadata?.image
           ),
-          file: new File([""], "", {
-            type: ad?.metadata?.animation_url ? "video/mp4" : "image/png",
-          }),
-          url: ad?.uri,
+          type: ad?.metadata?.animation_url ? "video" : "image",
         }
       : null
   );
-
-  console.log(image);
-  console.log(image?.file.type.includes("video"));
 
   const spaceNumber = Number(listingId - adGroup.startListingId) + 1;
 
@@ -75,9 +70,8 @@ const UpdateAdDataDialog = ({
       const hash = await uploadFile(file);
 
       setImage({
-        file,
-        url: `ipfs://${hash}`,
-        gatewayURL: `${ipfsGateway}/${hash}`,
+        url: `${ipfsGateway}/${hash}`,
+        type: file.type.includes("video") ? "video" : "image",
       });
     }
   };
@@ -89,31 +83,49 @@ const UpdateAdDataDialog = ({
     },
   });
 
-  const { writeContractAsync } = useWriteContract();
+  const { writeContractAsync } = useWriteContract({});
 
   const submitAdData = async () => {
     if (!image) return;
 
+    const s = image.url.split("/");
+
     const data: Metadata = {
       name: `Ad Space #${spaceNumber}`,
       description,
-      image: image.url,
+      image: `ipfs://${s[s.length - 1]}`,
     };
 
-    if (image.file.type.includes("video")) {
+    if (image.type === "video") {
       data.animation_url = image.url;
     }
 
     const metadata: File = new File([JSON.stringify(data)], "metadata.json");
-
     const hash = await uploadFile(metadata);
+    const adIpfsURI = `ipfs://${hash}`;
 
-    await writeContractAsync({
-      abi: adCommonOwnershipAbi,
-      address: adCommonOwnership,
-      functionName: "setAdUri",
-      args: [listingId, `ipfs://${hash}`],
-    });
+    await writeContractAsync(
+      {
+        abi: adCommonOwnershipAbi,
+        address: adCommonOwnership,
+        functionName: "setAdUri",
+        args: [listingId, adIpfsURI],
+      },
+      {
+        onSuccess: () => {
+          queryClient.setQueryData(
+            ["ad-" + Number(listingId).toString()],
+            (old: GetAdReturnType) => {
+              return {
+                uri: adIpfsURI,
+                gatewayUri: getGatewayUri(adIpfsURI),
+                metadata: data,
+              };
+            }
+          );
+        },
+      }
+    );
   };
 
   return (
@@ -123,13 +135,13 @@ const UpdateAdDataDialog = ({
       </DialogHeader>
       <div className="flex flex-col gap-3">
         {image &&
-          (image.file.type.includes("video") ? (
+          (image.type === "video" ? (
             <video className="w-full" controls preload="nonde">
-              <source src={image.gatewayURL} type="video/mp4"></source>
+              <source src={image.url} type="video/mp4"></source>
             </video>
           ) : (
             <Image
-              src={image.gatewayURL}
+              src={image.url}
               alt="Uploaded image"
               width={200}
               height={200}
