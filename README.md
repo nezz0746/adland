@@ -1,8 +1,6 @@
 
 <img src="image.png"/>
 
-<img src="image.png"/>
-
 <br />
 
 # 🪧 AdLand
