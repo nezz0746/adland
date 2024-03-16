@@ -23,7 +23,7 @@ const StreamPermissionButton = () => {
       },
     });
 
-  const { writeContractAsync: callGrantPermission } =
+  const { writeContractAsync: callGrantPermission, isPending } =
     useWriteCfAv1ForwarderGrantPermissions();
 
   const grantPermission = () => {
@@ -38,6 +38,7 @@ const StreamPermissionButton = () => {
       {" "}
       {!permissionGrantedToMarketplace && isFetched && (
         <Button
+          disabled={isPending}
           onClick={() => {
             grantPermission();
           }}
