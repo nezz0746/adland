@@ -10,6 +10,7 @@
     "generate": "wagmi generate"
   },
   "dependencies": {
+    "@coinbase/onchainkit": "^0.10.2",
     "@privy-io/react-auth": "^1.59.3",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",
