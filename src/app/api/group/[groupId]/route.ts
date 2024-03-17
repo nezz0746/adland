@@ -3,7 +3,7 @@ import { initialChain } from "@/lib/constants";
 import { NextResponse, NextRequest } from "next/server";
 import { readContract } from "viem/actions";
 import { client } from "../../services";
-import { formatAds } from "../../helpers";
+import { fetchJSON, formatAd, formatAds } from "../../helpers";
 
 type GetAdsRouteParams = { params: { groupId: string } };
 
@@ -29,18 +29,32 @@ export async function GET(req: NextRequest, { params }: GetAdsRouteParams) {
   const end = Number(endListingId);
 
   const adsPromises = Array.from({ length: end - start + 1 }, (_, i) => {
-    return readContract(client, {
-      address:
-        adCommonOwnershipAddress[
-          initialChain.id as keyof typeof adCommonOwnershipAddress
-        ],
-      abi: adCommonOwnershipAbi,
-      functionName: "getAd",
-      args: [BigInt(i + start)],
+    return new Promise(async (resolve) => {
+      try {
+        const { uri, gatewayUri } = formatAd(
+          await readContract(client, {
+            address:
+              adCommonOwnershipAddress[
+                initialChain.id as keyof typeof adCommonOwnershipAddress
+              ],
+            abi: adCommonOwnershipAbi,
+            functionName: "getAd",
+            args: [BigInt(i + start)],
+          })
+        );
+
+        return resolve({
+          uri,
+          gatewayUri,
+          metadata: gatewayUri ? await fetchJSON(gatewayUri) : null,
+        });
+      } catch (error) {
+        console.error(error);
+      }
     });
   });
 
-  const ads = await Promise.all(adsPromises).then(formatAds);
+  const ads = await Promise.all(adsPromises);
 
   return NextResponse.json({ start, end, beneficiary, ads });
 }

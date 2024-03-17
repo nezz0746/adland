@@ -13,3 +13,9 @@ export const formatAd = ({ uri }: Ad) => {
 export const formatAds = (ads: Ad[]) => {
   return ads.map(formatAd);
 };
+
+export const fetchJSON = async (url: string) => {
+  return fetch(url).then((res) => {
+    return res.json();
+  });
+};
