@@ -46,6 +46,9 @@ const UpdateAdDataDialog = ({
   const [description, setDescription] = useState<string>(
     ad?.metadata?.description ?? ""
   );
+  const [externalUrl, setExternalUrl] = useState<string>(
+    ad?.metadata?.external_url ?? ""
+  );
 
   const [image, setImage] = useState<{
     url: string;
@@ -99,6 +102,9 @@ const UpdateAdDataDialog = ({
 
     if (image.type === "video") {
       data.animation_url = `ipfs://${imageHash}`;
+    }
+    if (externalUrl !== "") {
+      data.external_url = externalUrl;
     }
 
     const metadata: File = new File([JSON.stringify(data)], "metadata.json");
@@ -159,6 +165,18 @@ const UpdateAdDataDialog = ({
             defaultValue={description}
             onChange={(e) => {
               setDescription(e.target.value);
+            }}
+          />
+        </div>
+        <div className="w-full space-y-2">
+          <Label htmlFor="email">Link</Label>
+          <Input
+            type="text"
+            id="external_url"
+            placeholder="Ad Link"
+            defaultValue={externalUrl}
+            onChange={(e) => {
+              setExternalUrl(e.target.value);
             }}
           />
         </div>

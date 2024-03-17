@@ -15,6 +15,7 @@ const AdPreview = ({ ad }: { ad?: GetAdReturnType }) => {
   const src = uri !== "" ? getGatewayUri(image) : "/logo.jpg";
 
   const text = metadata?.description;
+  const external_url = metadata?.external_url;
 
   return (
     <div className="relative h-full w-full border overflow-scroll">
@@ -48,6 +49,9 @@ const AdPreview = ({ ad }: { ad?: GetAdReturnType }) => {
           />
         )}
       </div>
+      {external_url && (
+        <p className="text-gray-600 font-semibold">{external_url}</p>
+      )}
     </div>
   );
 };
