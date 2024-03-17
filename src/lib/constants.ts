@@ -9,6 +9,8 @@ export const walletConnectProjectId =
 
 export const pimlicoAPIKey = process.env.NEXT_PUBLIC_PIMLICO_KEY;
 
+export const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "";
+
 export const initialChain: Chain = optimismSepolia;
 
 export type AppChainIds = typeof sepolia.id | typeof optimismSepolia.id;

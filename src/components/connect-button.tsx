@@ -1,118 +1,57 @@
-import { ConnectButton as RKConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "./ui/button";
-import { useChains, useSwitchChain } from "wagmi";
+import { useAccount } from "wagmi";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
-import Image from "next/image";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { truncateAddress } from "@/lib/utils";
 
 export const ConnectButton = () => {
-  const chains = useChains();
-  const { switchChain } = useSwitchChain();
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const { wallets } = useWallets();
+  console.log({ user, wallets });
+
+  const { address } = useAccount();
+
+  const disableLogin = !ready || (ready && authenticated);
+
+  if (!ready) return <></>;
+
+  if (!authenticated) {
+    return (
+      <Button disabled={disableLogin} onClick={login} type="button">
+        Connect Wallet
+      </Button>
+    );
+  }
 
   return (
-    <RKConnectButton.Custom>
-      {(props) => {
-        const {
-          account,
-          chain,
-          openAccountModal,
-          openConnectModal,
-          authenticationStatus,
-          mounted,
-        } = props;
-        // Note: If your app doesn't use authentication, you
-        // can remove all 'authenticationStatus' checks
-        const ready = mounted && authenticationStatus !== "loading";
-        const connected =
-          ready &&
-          account &&
-          chain &&
-          (!authenticationStatus || authenticationStatus === "authenticated");
-
-        return (
-          <div
-            {...(!ready && {
-              "aria-hidden": true,
-              style: {
-                opacity: 0,
-                pointerEvents: "none",
-                userSelect: "none",
-              },
-            })}
-          >
-            {(() => {
-              if (!connected) {
-                return (
-                  <Button onClick={openConnectModal} type="button">
-                    Connect Wallet
-                  </Button>
-                );
-              }
-              if (chain.unsupported) {
-                return (
-                  <Select
-                    onValueChange={(v) => {
-                      switchChain({ chainId: parseInt(v) });
-                    }}
-                  >
-                    <SelectTrigger className="w-[170px]">
-                      <SelectValue placeholder={"Wrong network"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {chains.map((chain) => (
-                        <SelectItem value={chain.id.toString()} key={chain.id}>
-                          {chain.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                );
-              }
-              return (
-                <div style={{ display: "flex", gap: 12 }}>
-                  <Select
-                    defaultValue={chain.id.toString()}
-                    onValueChange={(v) => {
-                      switchChain({ chainId: parseInt(v) });
-                    }}
-                  >
-                    <SelectTrigger className="w-[170px]">
-                      {chain.iconUrl && (
-                        <Image
-                          src={chain.iconUrl}
-                          alt={chain.name ?? "Chain Icon"}
-                          width={16}
-                          height={16}
-                        />
-                      )}
-                      <SelectValue placeholder={chain.name} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {chains.map((chain) => (
-                        <SelectItem value={chain.id.toString()} key={chain.id}>
-                          {chain.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    onClick={openAccountModal}
-                    type="button"
-                  >
-                    {account.displayName}
-                  </Button>
-                </div>
-              );
-            })()}
-          </div>
-        );
-      }}
-    </RKConnectButton.Custom>
+    <>
+      {user && user.farcaster && <Button>{user.farcaster.username}</Button>}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button type="button">{truncateAddress(address)}</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuLabel>
+            My Account: {truncateAddress(address)}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem onClick={logout}>
+              Logout
+              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   );
 };

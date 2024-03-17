@@ -3,11 +3,11 @@ import { initialChain } from "@/lib/constants";
 import { NextResponse, NextRequest } from "next/server";
 import { readContract } from "viem/actions";
 import { client } from "../../services";
-import { fetchJSON, formatAd, formatAds } from "../../helpers";
+import { fetchJSON, formatAd } from "../../helpers";
 
 type GetAdsRouteParams = { params: { groupId: string } };
 
-export async function GET(req: NextRequest, { params }: GetAdsRouteParams) {
+export async function GET(_: NextRequest, { params }: GetAdsRouteParams) {
   const { groupId: groupIdString } = params;
 
   const groupId = BigInt(groupIdString);
@@ -46,7 +46,14 @@ export async function GET(req: NextRequest, { params }: GetAdsRouteParams) {
         return resolve({
           uri,
           gatewayUri,
-          metadata: gatewayUri ? await fetchJSON(gatewayUri) : null,
+          metadata: gatewayUri
+            ? await fetchJSON(gatewayUri).then((metadata) => {
+                return {
+                  ...metadata,
+                  image: formatAd(metadata.image),
+                };
+              })
+            : null,
         });
       } catch (error) {
         console.error(error);
