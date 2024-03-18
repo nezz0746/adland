@@ -1,5 +1,6 @@
+import { FrameAspectRatio } from "@/lib/constants";
 import { GetAdReturnType } from "@/lib/types";
-import { getGatewayUri } from "@/lib/utils";
+import { getAR, getGatewayUri } from "@/lib/utils";
 import classNames from "classnames";
 import Image from "next/image";
 
@@ -16,11 +17,17 @@ const AdPreview = ({ ad }: { ad?: GetAdReturnType }) => {
 
   const text = metadata?.description;
   const external_url = metadata?.external_url;
+  const aspectRatio = getAR(metadata?.aspect_ratio);
 
   return (
-    <div className="relative h-full w-full border overflow-scroll">
+    <div className="relative h-full w-full border">
       <p className="text-gray-600 font-semibold">{text}</p>
-      <div className="relative w-full">
+      <div
+        className={classNames("relative", {
+          "aspect-1/1": aspectRatio === FrameAspectRatio.SQUARE,
+          "aspect-1.91/1": aspectRatio === FrameAspectRatio.RECTANGLE,
+        })}
+      >
         {!uri && (
           <div className="absolute top-0 left-0 z-[1] w-full h-full flex flex-row justify-center items-center">
             <p className="font-black text-4xl -rotate-45">NO AD</p>

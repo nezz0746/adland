@@ -3,8 +3,9 @@ import { adCommonOwnershipAbi, adCommonOwnershipAddress } from "@/generated";
 import { readContract } from "viem/actions";
 import { initialChain } from "./constants";
 import { fetchJSON, formatAd } from "@/app/api/helpers";
+import { GetAdReturnType } from "./types";
 
-export const fetchAd = async (listingId: string) => {
+export const fetchAd = async (listingId: string): Promise<GetAdReturnType> => {
   const res = await readContract(client, {
     address:
       adCommonOwnershipAddress[

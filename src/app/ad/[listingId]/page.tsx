@@ -1,5 +1,5 @@
 import { fetchAd } from "@/lib/ad";
-import { getGatewayUri } from "@/lib/utils";
+import { getAR, getGatewayUri } from "@/lib/utils";
 import { FrameMetadata } from "@coinbase/onchainkit";
 
 type PageProps = {
@@ -9,7 +9,11 @@ type PageProps = {
 export default async function AdPage({ params: { listingId } }: PageProps) {
   const { metadata } = await fetchAd(listingId);
 
-  const { image, external_url } = metadata;
+  if (!metadata) return null;
+
+  const { image, external_url, aspect_ratio: ar } = metadata;
+
+  const aspectRatio = getAR(ar);
 
   return (
     <FrameMetadata
@@ -26,7 +30,7 @@ export default async function AdPage({ params: { listingId } }: PageProps) {
       }
       image={{
         src: getGatewayUri(image),
-        aspectRatio: "1:1",
+        aspectRatio,
       }}
     />
   );

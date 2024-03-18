@@ -59,3 +59,8 @@ export const alchemyUrlByChain: Record<number, string> = {
   [sepolia.id]: `https://eth-sepolia.g.alchemy.com/v2/${alchemyKey}`,
   [optimismSepolia.id]: `https://opt-sepolia.g.alchemy.com/v2/${alchemyKey}`,
 };
+
+export enum FrameAspectRatio {
+  RECTANGLE = "1.91:1",
+  SQUARE = "1:1",
+}
