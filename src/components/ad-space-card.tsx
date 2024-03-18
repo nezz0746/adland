@@ -122,7 +122,7 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
           </div>
         </CardDescription>
       </CardHeader>
-      <CardContent className="h-[350px] p-4">
+      <CardContent className="p-4">
         {isLoading && <Skeleton className="h-full w-full border" />}
         {ad?.metadata && <AdPreview ad={ad} />}
       </CardContent>

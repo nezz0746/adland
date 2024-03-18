@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Address, Chain } from "viem";
-import { initialChain, ipfsGateway } from "./constants";
+import { FrameAspectRatio, initialChain, ipfsGateway } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -36,4 +36,11 @@ export const getSimulationArgs = <ArgT>(args: unknown[]): ArgT | undefined => {
   if (!allDefined(...args)) return undefined;
 
   return args as ArgT;
+};
+
+export const getAR = (aspectRatio?: string): FrameAspectRatio => {
+  return (
+    Object.values(FrameAspectRatio).find((ar) => ar === aspectRatio) ||
+    FrameAspectRatio.RECTANGLE
+  );
 };

@@ -24,6 +24,8 @@ export type Metadata = {
   image: string;
   description: string;
   animation_url?: string;
+  external_url?: string;
+  aspect_ratio?: string;
 };
 
 export type GetAdReturnType = Ad & {

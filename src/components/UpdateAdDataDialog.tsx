@@ -15,14 +15,23 @@ import {
   adCommonOwnershipAbi,
   useSimulateAdCommonOwnershipSetAdUri,
 } from "@/generated";
-import { ipfsGateway } from "@/lib/constants";
+import { FrameAspectRatio, ipfsGateway } from "@/lib/constants";
 import { uploadFile } from "@/lib/file";
-import { getGatewayUri, getSimulationArgs } from "@/lib/utils";
+import { getAR, getGatewayUri, getSimulationArgs } from "@/lib/utils";
 import { ContractFunctionArgs } from "viem";
 import { useWriteContract } from "wagmi";
 import { AdGroup, GetAdReturnType, Listing, Metadata } from "@/lib/types";
 import { queryClient } from "@/app/providers";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import classNames from "classnames";
 
 type UpdateAdDataDialogProps = {
   listing: Listing;
@@ -41,10 +50,15 @@ const UpdateAdDataDialog = ({
   ad,
   adGroup,
 }: UpdateAdDataDialogProps) => {
-  console.log(ad?.metadata);
   const { adCommonOwnership } = useAppContracts();
   const [description, setDescription] = useState<string>(
     ad?.metadata?.description ?? ""
+  );
+  const [externalUrl, setExternalUrl] = useState<string>(
+    ad?.metadata?.external_url ?? ""
+  );
+  const [aspectRatio, setAspectRatio] = useState<FrameAspectRatio>(
+    getAR(ad?.metadata?.aspect_ratio)
   );
 
   const [image, setImage] = useState<{
@@ -100,6 +114,10 @@ const UpdateAdDataDialog = ({
     if (image.type === "video") {
       data.animation_url = `ipfs://${imageHash}`;
     }
+    if (externalUrl !== "") {
+      data.external_url = externalUrl;
+    }
+    data.aspect_ratio = aspectRatio;
 
     const metadata: File = new File([JSON.stringify(data)], "metadata.json");
     const hash = await uploadFile(metadata);
@@ -131,25 +149,37 @@ const UpdateAdDataDialog = ({
   };
 
   return (
-    <DialogContent>
+    <DialogContent className="overflow-y-scroll max-h-screen">
       <DialogHeader>
         <DialogTitle>Upload new advertising content</DialogTitle>
       </DialogHeader>
       <div className="flex flex-col gap-3">
-        {image &&
-          (image.type === "video" ? (
-            <video className="w-full" controls preload="nonde">
-              <source src={image.url} type="video/mp4"></source>
-            </video>
-          ) : (
-            <Image
-              src={image.url}
-              alt="Uploaded image"
-              width={200}
-              height={200}
-              className="border w-full"
-            />
-          ))}
+        <div className={"flex flex-row justify-center"}>
+          <div
+            className={classNames(
+              {
+                "aspect-1/1": FrameAspectRatio.SQUARE === aspectRatio,
+                "aspect-1.91/1": FrameAspectRatio.RECTANGLE === aspectRatio,
+              },
+              "border w-full"
+            )}
+          >
+            {image &&
+              (image.type === "video" ? (
+                <video className="w-full" controls preload="nonde">
+                  <source src={image.url} type="video/mp4"></source>
+                </video>
+              ) : (
+                <Image
+                  src={image.url}
+                  alt="Uploaded image"
+                  width={200}
+                  height={200}
+                  className={classNames("border object-contain w-full h-full")}
+                />
+              ))}
+          </div>
+        </div>
         <div className="w-full space-y-2">
           <Label htmlFor="email">Ad Text</Label>
           <Input
@@ -161,6 +191,41 @@ const UpdateAdDataDialog = ({
               setDescription(e.target.value);
             }}
           />
+        </div>
+        <div className="w-full space-y-2">
+          <Label htmlFor="email">Link</Label>
+          <Input
+            type="text"
+            id="external_url"
+            placeholder="Ad Link"
+            defaultValue={externalUrl}
+            onChange={(e) => {
+              setExternalUrl(e.target.value);
+            }}
+          />
+        </div>
+
+        <div className="w-full space-y-2">
+          <Label htmlFor="email">Aspect Ratio</Label>
+
+          <Select
+            defaultValue={aspectRatio}
+            onValueChange={(v: FrameAspectRatio) => {
+              setAspectRatio(v);
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select the aspect ratio" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value={FrameAspectRatio.RECTANGLE}>
+                  Rectangle
+                </SelectItem>
+                <SelectItem value={FrameAspectRatio.SQUARE}>Square</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
         <div className="w-full space-y-2">
           <Label htmlFor="email">Image</Label>

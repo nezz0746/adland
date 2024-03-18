@@ -9,6 +9,8 @@ export const walletConnectProjectId =
 
 export const pimlicoAPIKey = process.env.NEXT_PUBLIC_PIMLICO_KEY;
 
+export const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "";
+
 export const initialChain: Chain = optimismSepolia;
 
 export type AppChainIds = typeof sepolia.id | typeof optimismSepolia.id;
@@ -57,3 +59,8 @@ export const alchemyUrlByChain: Record<number, string> = {
   [sepolia.id]: `https://eth-sepolia.g.alchemy.com/v2/${alchemyKey}`,
   [optimismSepolia.id]: `https://opt-sepolia.g.alchemy.com/v2/${alchemyKey}`,
 };
+
+export enum FrameAspectRatio {
+  RECTANGLE = "1.91:1",
+  SQUARE = "1:1",
+}
