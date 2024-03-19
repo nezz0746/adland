@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -27,9 +28,11 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useMutation } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { useAccount } from "wagmi";
 
 const GroupDistributionPage = () => {
   const { user, linkFarcaster } = usePrivy();
+  const { address } = useAccount();
   const [channelName, setChannelName] = useState("");
   const { id } = useParams();
 
@@ -49,6 +52,9 @@ const GroupDistributionPage = () => {
       },
     },
   });
+
+  const isBeneficiary =
+    adGroup?.beneficiary?.toLowerCase() === address?.toLowerCase();
 
   const { data: listings } = useReadDirectListingsLogicGetAllListings({
     args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
@@ -90,7 +96,11 @@ const GroupDistributionPage = () => {
         <CardHeader>
           <CardTitle>Farcaster Channel Distribution</CardTitle>
           <CardDescription>
-            You must be channel lead/owner in order to publish ad casts to it
+            Publish ads as frames:
+            <ul className="list-disc ml-4">
+              <li>MUST be ad group beneficiary</li>
+              <li>MUST be farcaster channel leader/owner</li>
+            </ul>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,13 +111,8 @@ const GroupDistributionPage = () => {
             placeholder="Channel Name"
             disabled={!signedInWithFarcaster}
           />
+          <Separator className="my-4" />
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead></TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
             <TableBody>
               {listings?.map((listing) => {
                 const adNumber =
@@ -120,7 +125,7 @@ const GroupDistributionPage = () => {
                     <TableCell>{adNumber}</TableCell>
                     <TableCell className="text-right">
                       <Button
-                        disabled={isPending}
+                        disabled={isPending || !isBeneficiary}
                         onClick={() => {
                           submitAd(listing.listingId.toString());
                         }}

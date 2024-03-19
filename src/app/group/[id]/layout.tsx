@@ -63,8 +63,8 @@ export default function GroupLayout({
   });
 
   return (
-    <div className="flex flex-row items-start gap-2">
-      <Card className="fixed w-[400px]">
+    <div className="flex flex-col md:flex-row items-start gap-2">
+      <Card className="md:fixed relative w-full sm:w-[400px]">
         <CardHeader>
           <CardTitle>Group #{id}</CardTitle>
           <CardDescription>
@@ -105,7 +105,7 @@ export default function GroupLayout({
           </div>
         </CardContent>
       </Card>
-      <div className="ml-[calc(400px+1em)] w-full">{children}</div>
+      <div className="md:ml-[calc(400px+1em)] w-full">{children}</div>
     </div>
   );
 }
