@@ -12,13 +12,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { truncateAddress } from "@/lib/utils";
+import { initialChain } from "@/lib/constants";
 
 export const ConnectButton = () => {
   const { ready, authenticated, login, logout, user } = usePrivy();
   const { wallets } = useWallets();
-  console.log({ user, wallets });
-
   const { address } = useAccount();
+
+  const wallet = wallets[0];
 
   const disableLogin = !ready || (ready && authenticated);
 
@@ -32,12 +33,28 @@ export const ConnectButton = () => {
     );
   }
 
+  const wrongNetwork = wallet?.chainId !== `eip155:${initialChain.id}`;
+
+  if (wrongNetwork) {
+    return (
+      <Button
+        onClick={() => {
+          wallet.switchChain(initialChain.id);
+        }}
+        type="button"
+      >
+        Wrong Network
+      </Button>
+    );
+  }
+
   return (
     <>
-      {user && user.farcaster && <Button>{user.farcaster.username}</Button>}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button type="button">{truncateAddress(address)}</Button>
+          <Button type="button">
+            {truncateAddress(address ?? user?.wallet?.address)}
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
           <DropdownMenuLabel>

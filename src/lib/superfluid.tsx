@@ -100,11 +100,13 @@ const useFlowingBalance = (
 };
 
 // FlowingBalance Component
-const FlowingBalance: React.FC<{
-  startingBalance: bigint;
-  startingBalanceDate: Date;
-  flowRate: bigint;
-}> = memo(({ startingBalance, startingBalanceDate, flowRate }) => {
+const FlowingBalance: React.FC<
+  {
+    startingBalance: bigint;
+    startingBalanceDate: Date;
+    flowRate: bigint;
+  } & React.HtmlHTMLAttributes<HTMLParagraphElement>
+> = memo(({ startingBalance, startingBalanceDate, flowRate, ...rest }) => {
   const flowingBalance = useFlowingBalance(
     startingBalance,
     startingBalanceDate,
@@ -117,11 +119,11 @@ const FlowingBalance: React.FC<{
   );
 
   return (
-    <div className="flowing-balance">
+    <p {...rest}>
       {decimalPlaces !== undefined
         ? toFixedUsingString(formatEther(flowingBalance), decimalPlaces)
         : formatEther(flowingBalance)}
-    </div>
+    </p>
   );
 });
 

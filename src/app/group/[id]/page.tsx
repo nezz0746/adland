@@ -1,28 +1,13 @@
 "use client";
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   useReadAdCommonOwnershipGetAdGroup,
-  useReadCfAv1ForwarderGetAccountFlowrate,
   useReadDirectListingsLogicGetAllListings,
-  useReadIsethBalanceOf,
 } from "@/generated";
-import useAppContracts from "@/hooks/useAppContracts";
-import FlowingBalance from "@/lib/superfluid";
 import { useParams } from "next/navigation";
-import { formatEther } from "viem";
-
 import AdSpaceCard from "@/components/ad-space-card";
-import AccountLink from "@/components/account-link";
 
 const GroupPage = () => {
-  const { ethx, cfaV1 } = useAppContracts();
   const { id } = useParams();
 
   const { data: adGroup, isSuccess } = useReadAdCommonOwnershipGetAdGroup({
@@ -42,14 +27,6 @@ const GroupPage = () => {
     },
   });
 
-  const { data: benefBalance, dataUpdatedAt } = useReadIsethBalanceOf({
-    address: ethx,
-    args: adGroup?.beneficiary && [adGroup?.beneficiary],
-    query: {
-      enabled: Boolean(adGroup?.beneficiary),
-    },
-  });
-
   const { data: listings } = useReadDirectListingsLogicGetAllListings({
     args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
     query: {
@@ -57,59 +34,18 @@ const GroupPage = () => {
     },
   });
 
-  const { data: benefFlowRate } = useReadCfAv1ForwarderGetAccountFlowrate({
-    address: cfaV1,
-    args: adGroup?.beneficiary && [ethx, adGroup?.beneficiary],
-    query: {
-      enabled: Boolean(adGroup?.beneficiary),
-    },
-  });
-
   return (
-    <div className="flex flex-row items-start gap-2">
-      <Card className="fixed w-[400px]">
-        <CardHeader>
-          <CardTitle>Group #{id}</CardTitle>
-          <CardDescription>
-            Ad Group of size {adGroup?.size} for beneficiary{" "}
-            {adGroup?.beneficiary && (
-              <AccountLink address={adGroup?.beneficiary} />
-            )}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-row gap-2">
-            <p className="">Realtime balance: </p>{" "}
-            {benefBalance !== undefined && benefFlowRate !== undefined && (
-              <FlowingBalance
-                startingBalance={benefBalance}
-                startingBalanceDate={new Date(dataUpdatedAt)}
-                flowRate={benefFlowRate}
-              />
-            )}
-            <p>ETH</p>
-          </div>
-          <p className="text-green-700">
-            +{" "}
-            {formatEther(
-              (benefFlowRate ?? BigInt(0)) * BigInt(60 * 60 * 24 * 7)
-            )}{" "}
-            / week
-          </p>
-        </CardContent>
-      </Card>
-      <div className="ml-[calc(400px+1em)] flex-grow grid grid-cols-2 gap-2">
-        {adGroup &&
-          listings?.map((listing) => {
-            return (
-              <AdSpaceCard
-                key={listing.listingId}
-                listing={listing}
-                adGroup={adGroup}
-              />
-            );
-          })}
-      </div>
+    <div className="flex-grow grid grid-cols-2 gap-2">
+      {adGroup &&
+        listings?.map((listing) => {
+          return (
+            <AdSpaceCard
+              key={listing.listingId}
+              listing={listing}
+              adGroup={adGroup}
+            />
+          );
+        })}
     </div>
   );
 };
