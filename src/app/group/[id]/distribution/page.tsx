@@ -116,7 +116,7 @@ const GroupDistributionPage = () => {
                       Number(adGroup?.startListingId ?? 0)
                   ) + 1;
                 return (
-                  <TableRow>
+                  <TableRow key={listing?.assetContract + adNumber}>
                     <TableCell>{adNumber}</TableCell>
                     <TableCell className="text-right">
                       <Button

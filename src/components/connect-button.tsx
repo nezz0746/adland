@@ -23,9 +23,17 @@ export const ConnectButton = () => {
 
   const disableLogin = !ready || (ready && authenticated);
 
-  if (!ready || !wallet) return <></>;
+  if (!ready) return <></>;
 
-  const wrongNetwork = wallet.chainId !== `eip155:${initialChain.id}`;
+  if (!authenticated) {
+    return (
+      <Button disabled={disableLogin} onClick={login} type="button">
+        Connect Wallet
+      </Button>
+    );
+  }
+
+  const wrongNetwork = wallet?.chainId !== `eip155:${initialChain.id}`;
 
   if (wrongNetwork) {
     return (
@@ -40,19 +48,13 @@ export const ConnectButton = () => {
     );
   }
 
-  if (!authenticated) {
-    return (
-      <Button disabled={disableLogin} onClick={login} type="button">
-        Connect Wallet
-      </Button>
-    );
-  }
-
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button type="button">{truncateAddress(address)}</Button>
+          <Button type="button">
+            {truncateAddress(address ?? user?.wallet?.address)}
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
           <DropdownMenuLabel>
