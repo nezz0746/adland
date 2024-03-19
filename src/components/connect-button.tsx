@@ -12,17 +12,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { truncateAddress } from "@/lib/utils";
+import { initialChain } from "@/lib/constants";
 
 export const ConnectButton = () => {
   const { ready, authenticated, login, logout, user } = usePrivy();
   const { wallets } = useWallets();
-  console.log({ user, wallets });
-
   const { address } = useAccount();
+
+  const wallet = wallets[0];
 
   const disableLogin = !ready || (ready && authenticated);
 
-  if (!ready) return <></>;
+  if (!ready || !wallet) return <></>;
+
+  const wrongNetwork = wallet.chainId !== `eip155:${initialChain.id}`;
+
+  if (wrongNetwork) {
+    return (
+      <Button
+        onClick={() => {
+          wallet.switchChain(initialChain.id);
+        }}
+        type="button"
+      >
+        Wrong Network
+      </Button>
+    );
+  }
 
   if (!authenticated) {
     return (
