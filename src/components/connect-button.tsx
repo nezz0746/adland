@@ -50,7 +50,6 @@ export const ConnectButton = () => {
 
   return (
     <>
-      {user && user.farcaster && <Button>{user.farcaster.username}</Button>}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button type="button">{truncateAddress(address)}</Button>
