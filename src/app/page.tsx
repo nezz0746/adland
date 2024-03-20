@@ -141,9 +141,7 @@ export default function Home() {
             >
               Downgrade All
             </Button>
-            <Button>
-              <Link href="/create-ad">Create Ad Group</Link>
-            </Button>
+
           </div>
         </CardFooter>
       </Card> */}
@@ -190,6 +188,11 @@ export default function Home() {
             </Table>
           </Card>
         </CardContent>
+        <CardFooter className="justify-end">
+          <Button>
+            <Link href="/create-ad">Create Ad Group</Link>
+          </Button>
+        </CardFooter>
       </Card>
     </>
   );
