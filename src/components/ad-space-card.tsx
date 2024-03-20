@@ -8,7 +8,11 @@ import {
   CardTitle,
 } from "./ui/card";
 import { formatEther, parseEther } from "viem";
-import { useAccount, useWriteContract } from "wagmi";
+import {
+  useAccount,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
 import { getWeeklyTaxDue } from "@/lib/utils";
 import AcquireLeaseActions from "./acquire-lease-actions";
 import AdPreview from "./ad-preview";
@@ -85,11 +89,20 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
       ],
     });
 
-  const { writeContractAsync } = useWriteContract();
+  const { data: hash, writeContract, isPending } = useWriteContract();
+
+  const { isLoading: selfAssessmentLoading } = useWaitForTransactionReceipt({
+    hash,
+    query: {
+      enabled: Boolean(hash),
+    },
+  });
 
   const selfAssess = async () => {
-    writeContractAsync(selfAssessRequest!.request);
+    writeContract(selfAssessRequest!.request);
   };
+
+  const assessmentLoading = isPending || selfAssessmentLoading;
 
   return (
     <Card className={classNames({ "bg-gray-200": ownerIsBeneficiary })}>
@@ -173,10 +186,13 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
                     <Button variant={"outline"}>Cancel</Button>
                   </DialogClose>
                   <Button
-                    disabled={!Boolean(selfAssessRequest?.request)}
+                    disabled={
+                      !Boolean(selfAssessRequest?.request) || assessmentLoading
+                    }
                     onClick={() => {
                       selfAssess();
                     }}
+                    loading={assessmentLoading}
                   >
                     Reassess
                   </Button>
@@ -209,7 +225,7 @@ const AdSpaceCard = ({ listing, adGroup }: AdSpaceCardProps) => {
                     </ul>
                   </DialogDescription>
                 </DialogHeader>
-                <AcquireLeaseActions listingId={listingId} />
+                <AcquireLeaseActions listing={listing} />
               </DialogContent>
             </Dialog>
           </div>

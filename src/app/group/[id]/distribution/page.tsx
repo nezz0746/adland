@@ -12,55 +12,26 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  useReadAdCommonOwnershipGetAdGroup,
-  useReadDirectListingsLogicGetAllListings,
-} from "@/generated";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { useReadDirectListingsLogicGetAllListings } from "@/generated";
 import { usePrivy } from "@privy-io/react-auth";
 import { useMutation } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useAccount } from "wagmi";
+import { GroupLayoutContext } from "../layout";
 
 const GroupDistributionPage = () => {
   const { user, linkFarcaster } = usePrivy();
   const { address } = useAccount();
   const [channelName, setChannelName] = useState("");
-  const { id } = useParams();
 
-  const { data: adGroup, isSuccess } = useReadAdCommonOwnershipGetAdGroup({
-    args: [BigInt(parseInt(id as string))],
-    query: {
-      enabled: id !== undefined,
-      select: (data) => {
-        const size = Number(data.endListingId - data.startListingId) + 1;
-
-        return {
-          beneficiary: data.beneficiary,
-          startListingId: data.startListingId,
-          endListingId: data.endListingId,
-          size,
-        };
-      },
-    },
-  });
+  const { adGroup } = useContext(GroupLayoutContext);
 
   const isBeneficiary =
     adGroup?.beneficiary?.toLowerCase() === address?.toLowerCase();
 
   const { data: listings } = useReadDirectListingsLogicGetAllListings({
     args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
-    query: {
-      enabled: isSuccess,
-    },
   });
 
   const { mutate: pushAdOnChannel, isPending } = useMutation({

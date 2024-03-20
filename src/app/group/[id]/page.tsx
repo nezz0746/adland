@@ -1,48 +1,40 @@
 "use client";
 
 import {
-  useReadAdCommonOwnershipGetAdGroup,
   useReadDirectListingsLogicGetAllListings,
   useWatchDirectListingsLogicNewSaleEvent,
+  useWatchDirectListingsLogicUpdatedListingEvent,
 } from "@/generated";
-import { useParams } from "next/navigation";
 import AdSpaceCard from "@/components/ad-space-card";
 import useAppContracts from "@/hooks/useAppContracts";
+import { useContext } from "react";
+import { GroupLayoutContext } from "./layout";
 
 const GroupPage = () => {
-  const { id } = useParams();
   const { adCommonOwnership } = useAppContracts();
+  const { adGroup, refetchAdGroup } = useContext(GroupLayoutContext);
 
-  const { data: adGroup, isSuccess } = useReadAdCommonOwnershipGetAdGroup({
-    args: [BigInt(parseInt(id as string))],
-    query: {
-      enabled: id !== undefined,
-      select: (data) => {
-        const size = Number(data.endListingId - data.startListingId) + 1;
-
-        return {
-          beneficiary: data.beneficiary,
-          startListingId: data.startListingId,
-          endListingId: data.endListingId,
-          size,
-        };
-      },
-    },
-  });
-
-  const { data: listings, refetch } = useReadDirectListingsLogicGetAllListings({
-    args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
-    query: {
-      enabled: isSuccess,
-    },
-  });
+  const { data: listings, refetch: fetchListings } =
+    useReadDirectListingsLogicGetAllListings({
+      args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
+    });
 
   useWatchDirectListingsLogicNewSaleEvent({
     args: {
       assetContract: adCommonOwnership,
     },
     onLogs: () => {
-      refetch();
+      fetchListings();
+    },
+  });
+
+  useWatchDirectListingsLogicUpdatedListingEvent({
+    args: {
+      assetContract: adCommonOwnership,
+    },
+    onLogs: () => {
+      refetchAdGroup();
+      fetchListings();
     },
   });
 

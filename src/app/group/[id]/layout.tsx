@@ -17,9 +17,25 @@ import {
 } from "@/generated";
 import useAppContracts from "@/hooks/useAppContracts";
 import FlowingBalance from "@/lib/superfluid";
+import { AdGroup } from "@/lib/types";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { createContext } from "react";
 import { formatEther } from "viem";
+
+type AdGroupContext = {
+  adGroup: AdGroup;
+  refetchAdGroup: () => void;
+};
+
+export const GroupLayoutContext = createContext<AdGroupContext>({
+  adGroup: {
+    beneficiary: "0x0",
+    startListingId: BigInt(0),
+    endListingId: BigInt(0),
+  },
+  refetchAdGroup: () => {},
+});
 
 export default function GroupLayout({
   children,
@@ -54,13 +70,14 @@ export default function GroupLayout({
     },
   });
 
-  const { data: benefFlowRate } = useReadCfAv1ForwarderGetAccountFlowrate({
-    address: cfaV1,
-    args: adGroup?.beneficiary && [ethx, adGroup?.beneficiary],
-    query: {
-      enabled: Boolean(adGroup?.beneficiary),
-    },
-  });
+  const { data: benefFlowRate, refetch } =
+    useReadCfAv1ForwarderGetAccountFlowrate({
+      address: cfaV1,
+      args: adGroup?.beneficiary && [ethx, adGroup?.beneficiary],
+      query: {
+        enabled: Boolean(adGroup?.beneficiary),
+      },
+    });
 
   return (
     <div className="flex flex-col md:flex-row items-start gap-2">
@@ -105,7 +122,20 @@ export default function GroupLayout({
           </div>
         </CardContent>
       </Card>
-      <div className="md:ml-[calc(400px+1em)] w-full">{children}</div>
+      <div className="md:ml-[calc(400px+1em)] w-full">
+        {adGroup && (
+          <GroupLayoutContext.Provider
+            value={{
+              adGroup: adGroup,
+              refetchAdGroup: () => {
+                refetch();
+              },
+            }}
+          >
+            {children}
+          </GroupLayoutContext.Provider>
+        )}
+      </div>
     </div>
   );
 }

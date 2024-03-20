@@ -84,6 +84,9 @@ const CreateAdGroupForm = ({ beneficiary }: CreateAdGroupFormProps) => {
 
   const { isLoading } = useWaitForTransactionReceipt({
     hash,
+    query: {
+      enabled: Boolean(hash),
+    },
   });
 
   const isPending = confirmPending || isLoading;
