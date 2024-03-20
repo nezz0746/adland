@@ -24,13 +24,16 @@ import {
 } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Address, formatEther, parseEther } from "viem";
+import { adCommonOwnershipAbi } from "@/generated";
+import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import useAppContracts from "@/hooks/useAppContracts";
 
 const createAdGroupSchema = z.object({
   beneficiary: z.string(),
   currency: z.string(),
   initialPrice: z.bigint(),
-  taxRate: z.bigint().max(BigInt(100000)),
-  size: z.bigint(),
+  taxRate: z.bigint().lte(BigInt(10000)),
+  size: z.number(),
 });
 
 type CreateAdGroupFormValues = z.infer<typeof createAdGroupSchema>;
@@ -47,13 +50,43 @@ const CreateAdGroupForm = ({ beneficiary }: CreateAdGroupFormProps) => {
       currency: NATIVE_CURRENCY,
       initialPrice: BigInt(1e16),
       taxRate: BigInt(10),
-      size: BigInt(5),
+      size: 5,
     },
   });
+  const { adCommonOwnership } = useAppContracts();
 
-  const onSubmit = (values: CreateAdGroupFormValues) => {
-    console.log(values);
+  const {
+    data: hash,
+    writeContract,
+    isPending: confirmPending,
+  } = useWriteContract();
+
+  const onSubmit = ({
+    beneficiary,
+    currency,
+    initialPrice,
+    taxRate,
+    size,
+  }: CreateAdGroupFormValues) => {
+    writeContract({
+      abi: adCommonOwnershipAbi,
+      address: adCommonOwnership,
+      functionName: "createAdGroup",
+      args: [
+        beneficiary as Address,
+        currency as Address,
+        initialPrice,
+        taxRate,
+        size,
+      ],
+    });
   };
+
+  const { isLoading } = useWaitForTransactionReceipt({
+    hash,
+  });
+
+  const isPending = confirmPending || isLoading;
 
   return (
     <Form {...form}>
@@ -129,9 +162,9 @@ const CreateAdGroupForm = ({ beneficiary }: CreateAdGroupFormProps) => {
                       min={0}
                       max={100}
                       step={1}
-                      defaultValue={[Number(value)]}
+                      defaultValue={[value]}
                       onValueChange={(vals) => {
-                        onChange(BigInt(vals[0]));
+                        onChange(vals[0]);
                       }}
                     />
                   </FormControl>
@@ -145,7 +178,9 @@ const CreateAdGroupForm = ({ beneficiary }: CreateAdGroupFormProps) => {
             />
           </CardContent>
           <CardFooter className="justify-end">
-            <Button type="submit">Create Ad Group</Button>
+            <Button type="submit" loading={isPending}>
+              Create Ad Group
+            </Button>
           </CardFooter>
         </Card>
       </form>
