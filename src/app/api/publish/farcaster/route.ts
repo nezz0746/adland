@@ -19,31 +19,50 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
 
   // Get Channel
   // Throw if channel doesn't exist
-  const { channel } = await neynar.lookupChannel(channelName);
+  try {
+    const { channel } = await neynar.lookupChannel(channelName);
 
-  const channelLeadFid = channel.lead?.fid;
-  // Throw if userFid isn't lead of channel
-  if (channelLeadFid !== userFid) {
-    throw new Error("User is not lead of channel");
-  }
-
-  // Get Ad
-  const { metadata } = await fetchAd(adListingId);
-
-  // Create Cast
-  const cast = await neynar.publishCast(
-    signerUUID,
-    metadata?.description ?? "",
-    {
-      channelId: channel?.id,
-      embeds: [
-        {
-          url: `${baseURL}/ad/${adListingId}`,
-        },
-      ],
+    const channelLeadFid = channel.lead?.fid;
+    // Throw if userFid isn't lead of channel
+    if (channelLeadFid !== userFid) {
+      throw new Error("User is not lead of channel");
     }
-  );
 
-  // Return Cast ID
-  return NextResponse.json({ cast });
+    // Get Ad
+    const { metadata } = await fetchAd(adListingId);
+
+    if (metadata?.image === "" || !Boolean(metadata)) {
+      throw new Error("Ad not valie");
+    }
+
+    // Create Cast
+    const cast = await neynar.publishCast(
+      signerUUID,
+      metadata?.description ?? "",
+      {
+        channelId: channel?.id,
+        embeds: [
+          {
+            url: `${baseURL}/ad/${adListingId}`,
+          },
+        ],
+      }
+    );
+    // Return Cast ID
+    return NextResponse.json({ cast });
+  } catch (error) {
+    console.log(error);
+    // @ts-ignore
+    if (error?.response?.data?.message === "id is required") {
+      return NextResponse.json({ error: "NO_CHANNEL" });
+      // @ts-ignore
+    } else if (error.message === "User is not lead of channel") {
+      return NextResponse.json({ error: "USER_NOT_LEAD" });
+      // @ts-ignore
+    } else if (error.message === "Ad not valie") {
+      return NextResponse.json({ error: "AD_NOT_VALID" });
+    } else {
+      return NextResponse.json({ error: "ERROR" });
+    }
+  }
 };

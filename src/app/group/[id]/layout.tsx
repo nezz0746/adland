@@ -13,11 +13,12 @@ import { Separator } from "@/components/ui/separator";
 import {
   useReadAdCommonOwnershipGetAdGroup,
   useReadCfAv1ForwarderGetAccountFlowrate,
+  useReadDirectListingsLogicGetAllListings,
   useReadIsethBalanceOf,
 } from "@/generated";
 import useAppContracts from "@/hooks/useAppContracts";
 import FlowingBalance from "@/lib/superfluid";
-import { AdGroup } from "@/lib/types";
+import { AdGroup, Listings } from "@/lib/types";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { createContext } from "react";
@@ -25,7 +26,9 @@ import { formatEther } from "viem";
 
 type AdGroupContext = {
   adGroup: AdGroup;
+  listings: Listings;
   refetchAdGroup: () => void;
+  refetchListings: () => void;
 };
 
 export const GroupLayoutContext = createContext<AdGroupContext>({
@@ -34,7 +37,9 @@ export const GroupLayoutContext = createContext<AdGroupContext>({
     startListingId: BigInt(0),
     endListingId: BigInt(0),
   },
+  listings: [],
   refetchAdGroup: () => {},
+  refetchListings: () => {},
 });
 
 export default function GroupLayout({
@@ -77,6 +82,11 @@ export default function GroupLayout({
       query: {
         enabled: Boolean(adGroup?.beneficiary),
       },
+    });
+
+  const { data: listings, refetch: fetchListings } =
+    useReadDirectListingsLogicGetAllListings({
+      args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
     });
 
   return (
@@ -123,12 +133,16 @@ export default function GroupLayout({
         </CardContent>
       </Card>
       <div className="md:ml-[calc(400px+1em)] w-full">
-        {adGroup && (
+        {adGroup && listings && (
           <GroupLayoutContext.Provider
             value={{
               adGroup: adGroup,
+              listings,
               refetchAdGroup: () => {
                 refetch();
+              },
+              refetchListings: () => {
+                fetchListings();
               },
             }}
           >

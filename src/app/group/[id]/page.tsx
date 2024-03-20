@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useReadDirectListingsLogicGetAllListings,
   useWatchDirectListingsLogicNewSaleEvent,
   useWatchDirectListingsLogicUpdatedListingEvent,
 } from "@/generated";
@@ -12,19 +11,15 @@ import { GroupLayoutContext } from "./layout";
 
 const GroupPage = () => {
   const { adCommonOwnership } = useAppContracts();
-  const { adGroup, refetchAdGroup } = useContext(GroupLayoutContext);
-
-  const { data: listings, refetch: fetchListings } =
-    useReadDirectListingsLogicGetAllListings({
-      args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
-    });
+  const { adGroup, listings, refetchAdGroup, refetchListings } =
+    useContext(GroupLayoutContext);
 
   useWatchDirectListingsLogicNewSaleEvent({
     args: {
       assetContract: adCommonOwnership,
     },
     onLogs: () => {
-      fetchListings();
+      refetchListings();
     },
   });
 
@@ -34,7 +29,7 @@ const GroupPage = () => {
     },
     onLogs: () => {
       refetchAdGroup();
-      fetchListings();
+      refetchListings();
     },
   });
 

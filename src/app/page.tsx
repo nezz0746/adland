@@ -87,7 +87,7 @@ export default function Home() {
 
   return (
     <>
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Account: {address}</CardTitle>
           <CardDescription>
@@ -146,7 +146,7 @@ export default function Home() {
             </Button>
           </div>
         </CardFooter>
-      </Card>
+      </Card> */}
       <Card>
         <CardHeader>
           <CardTitle>Ad Groups</CardTitle>

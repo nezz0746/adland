@@ -13,26 +13,23 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { useReadDirectListingsLogicGetAllListings } from "@/generated";
 import { usePrivy } from "@privy-io/react-auth";
 import { useMutation } from "@tanstack/react-query";
 import { useContext, useState } from "react";
 import { useAccount } from "wagmi";
 import { GroupLayoutContext } from "../layout";
+import { toast } from "sonner";
+import Link from "next/link";
 
 const GroupDistributionPage = () => {
   const { user, linkFarcaster } = usePrivy();
   const { address } = useAccount();
   const [channelName, setChannelName] = useState("");
 
-  const { adGroup } = useContext(GroupLayoutContext);
+  const { adGroup, listings } = useContext(GroupLayoutContext);
 
   const isBeneficiary =
     adGroup?.beneficiary?.toLowerCase() === address?.toLowerCase();
-
-  const { data: listings } = useReadDirectListingsLogicGetAllListings({
-    args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
-  });
 
   const { mutate: pushAdOnChannel, isPending } = useMutation({
     mutationFn: (data: PublishAdsFarcasterRequestBody) => {
@@ -44,19 +41,49 @@ const GroupDistributionPage = () => {
         },
       }).then((res) => res.json());
     },
-    onError: (error) => {
-      console.error(error);
-    },
   });
 
   const submitAd = async (adListingId: string) => {
     if (!user?.farcaster?.fid) return;
 
-    pushAdOnChannel({
-      userFid: user?.farcaster?.fid,
-      channelName,
-      adListingId,
-    });
+    pushAdOnChannel(
+      {
+        userFid: user?.farcaster?.fid,
+        channelName,
+        adListingId,
+      },
+      {
+        onSuccess: (data) => {
+          if (data.error) {
+            if (data.error === "NO_CHANNEL") {
+              toast.error("Please enter a valid channel name");
+            } else if (data.error === "USER_NOT_LEAD") {
+              toast.error("You are not the lead of this channel");
+            } else if (data.error === "AD_NOT_VALID") {
+              toast.error("Ad not valid");
+            } else {
+              toast.error("An error occurred publishing the ad");
+            }
+          } else {
+            const castHash = data.cast.hash;
+            const warpcastURL = `https://warpcast.com/${channelName}/${castHash}`;
+            console.log(data);
+            toast.success(
+              <>
+                Ad published successfully!{" "}
+                <Link target="_blank" href={warpcastURL} className="underline">
+                  View on Warpcast
+                </Link>
+              </>,
+              {
+                closeButton: true,
+                duration: 60 * 60,
+              }
+            );
+          }
+        },
+      }
+    );
   };
 
   const signedInWithFarcaster = Boolean(user?.farcaster);
@@ -96,7 +123,9 @@ const GroupDistributionPage = () => {
                     <TableCell>{adNumber}</TableCell>
                     <TableCell className="text-right">
                       <Button
-                        disabled={isPending || !isBeneficiary}
+                        disabled={
+                          isPending || !isBeneficiary || !signedInWithFarcaster
+                        }
                         onClick={() => {
                           submitAd(listing.listingId.toString());
                         }}
@@ -112,7 +141,7 @@ const GroupDistributionPage = () => {
         </CardContent>
         <CardFooter className="gap-2 justify-end">
           <Button
-            disabled={signedInWithFarcaster}
+            disabled={signedInWithFarcaster || !isBeneficiary}
             className="gap-2"
             onClick={() => {
               if (!signedInWithFarcaster) linkFarcaster();
