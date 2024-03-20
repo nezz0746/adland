@@ -3,12 +3,15 @@
 import {
   useReadAdCommonOwnershipGetAdGroup,
   useReadDirectListingsLogicGetAllListings,
+  useWatchDirectListingsLogicNewSaleEvent,
 } from "@/generated";
 import { useParams } from "next/navigation";
 import AdSpaceCard from "@/components/ad-space-card";
+import useAppContracts from "@/hooks/useAppContracts";
 
 const GroupPage = () => {
   const { id } = useParams();
+  const { adCommonOwnership } = useAppContracts();
 
   const { data: adGroup, isSuccess } = useReadAdCommonOwnershipGetAdGroup({
     args: [BigInt(parseInt(id as string))],
@@ -27,10 +30,19 @@ const GroupPage = () => {
     },
   });
 
-  const { data: listings } = useReadDirectListingsLogicGetAllListings({
+  const { data: listings, refetch } = useReadDirectListingsLogicGetAllListings({
     args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
     query: {
       enabled: isSuccess,
+    },
+  });
+
+  useWatchDirectListingsLogicNewSaleEvent({
+    args: {
+      assetContract: adCommonOwnership,
+    },
+    onLogs: () => {
+      refetch();
     },
   });
 

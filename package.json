@@ -42,8 +42,8 @@
     "sonner": "^1.4.2",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
-    "viem": "^2.7.22",
-    "wagmi": "^2.5.7",
+    "viem": "^2.8.14",
+    "wagmi": "^2.5.11",
     "zod": "^3.22.4",
     "zustand": "^4.5.2"
   },

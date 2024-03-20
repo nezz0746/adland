@@ -16,7 +16,12 @@ import { NATIVE_CURRENCY } from "@/lib/constants";
 import { allDefined, getSimulationArgs, getWeeklyTaxDue } from "@/lib/utils";
 import { useState } from "react";
 import { ContractFunctionArgs, formatEther } from "viem";
-import { useAccount, useBalance, useWriteContract } from "wagmi";
+import {
+  useAccount,
+  useBalance,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
 import { format, addWeeks } from "date-fns";
 
 type BuyFromListinArgs = ContractFunctionArgs<
@@ -108,7 +113,13 @@ const AcquireLeaseActions = ({ listingId }: { listingId: bigint }) => {
     },
   });
 
-  const { writeContract } = useWriteContract();
+  const { data: hash, writeContract, isPending } = useWriteContract();
+
+  const { isLoading } = useWaitForTransactionReceipt({
+    hash,
+  });
+
+  const takoverLoading = isPending || isLoading;
 
   const numberOfWeeksAvailable = Number(
     (listing?.pricePerToken &&
@@ -154,10 +165,11 @@ const AcquireLeaseActions = ({ listingId }: { listingId: bigint }) => {
       </div>
       <p>Balance {Number(formatEther(ethBalance?.value ?? BigInt(0)))} ETH</p>
       <Button
-        disabled={!Boolean(buyRequest?.request)}
+        disabled={!Boolean(buyRequest?.request) || takoverLoading}
         onClick={() => {
           writeContract(buyRequest!.request);
         }}
+        loading={takoverLoading}
       >
         Take over lease ({listing?.price} ETH)
       </Button>
