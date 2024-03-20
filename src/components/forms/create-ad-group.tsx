@@ -120,7 +120,7 @@ const CreateAdGroupForm = ({ beneficiary }: CreateAdGroupFormProps) => {
                     />
                   </FormControl>
                   <FormDescription>
-                    The initial price for the ad group. (ETH)
+                    The initial price for the ad group (ETH)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -172,7 +172,7 @@ const CreateAdGroupForm = ({ beneficiary }: CreateAdGroupFormProps) => {
                     />
                   </FormControl>
                   <FormDescription>
-                    The amount of ad space in pixels:{" "}
+                    The amount of ad space in the group:{" "}
                     <span className="font-bold text-lg">{Number(value)}</span>
                   </FormDescription>
                   <FormMessage />
