@@ -18,29 +18,10 @@ import {
 } from "@/generated";
 import useAppContracts from "@/hooks/useAppContracts";
 import FlowingBalance from "@/lib/superfluid";
-import { AdGroup, Listings } from "@/lib/types";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { createContext } from "react";
 import { formatEther } from "viem";
-
-type AdGroupContext = {
-  adGroup: AdGroup;
-  listings: Listings;
-  refetchAdGroup: () => void;
-  refetchListings: () => void;
-};
-
-export const GroupLayoutContext = createContext<AdGroupContext>({
-  adGroup: {
-    beneficiary: "0x0",
-    startListingId: BigInt(0),
-    endListingId: BigInt(0),
-  },
-  listings: [],
-  refetchAdGroup: () => {},
-  refetchListings: () => {},
-});
+import { GroupLayoutContext } from "./context";
 
 export default function GroupLayout({
   children,

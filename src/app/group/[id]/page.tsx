@@ -7,7 +7,7 @@ import {
 import AdSpaceCard from "@/components/ad-space-card";
 import useAppContracts from "@/hooks/useAppContracts";
 import { useContext } from "react";
-import { GroupLayoutContext } from "./layout";
+import { GroupLayoutContext } from "./context";
 
 const GroupPage = () => {
   const { adCommonOwnership } = useAppContracts();

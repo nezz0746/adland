@@ -17,9 +17,9 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useMutation } from "@tanstack/react-query";
 import { useContext, useState } from "react";
 import { useAccount } from "wagmi";
-import { GroupLayoutContext } from "../layout";
 import { toast } from "sonner";
 import Link from "next/link";
+import { GroupLayoutContext } from "../context";
 
 const GroupDistributionPage = () => {
   const { user, linkFarcaster } = usePrivy();
