@@ -98,10 +98,14 @@ const UpdateAdDataDialog = ({
     },
   });
 
-  const { writeContractAsync } = useWriteContract({});
+  const { writeContractAsync, isPending } = useWriteContract({});
+
+  const [uploadingData, setUploadingData] = useState(false);
 
   const submitAdData = async () => {
     if (!image) return;
+
+    setUploadingData(true);
 
     const s = image.url.split("/");
     const imageHash = s[s.length - 1];
@@ -122,6 +126,8 @@ const UpdateAdDataDialog = ({
     const metadata: File = new File([JSON.stringify(data)], "metadata.json");
     const hash = await uploadFile(metadata);
     const adIpfsURI = `ipfs://${hash}`;
+
+    setUploadingData(false);
 
     await writeContractAsync(
       {
@@ -147,6 +153,8 @@ const UpdateAdDataDialog = ({
       }
     );
   };
+
+  const contentUpdating = isPending || uploadingData;
 
   return (
     <DialogContent className="overflow-y-scroll max-h-screen">
@@ -242,8 +250,9 @@ const UpdateAdDataDialog = ({
           <Button variant={"outline"}>Cancel</Button>
         </DialogClose>
         <Button
-          disabled={!Boolean(setAdUriRequest?.request)}
+          disabled={!Boolean(setAdUriRequest?.request) || contentUpdating}
           onClick={submitAdData}
+          loading={contentUpdating}
         >
           Upload
         </Button>

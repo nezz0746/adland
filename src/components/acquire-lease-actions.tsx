@@ -4,11 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
   directListingsLogicAbi,
-  useReadDirectListingsLogicGetListing,
   useReadErc721OwnerOf,
   useReadSuperTokenBalanceOf,
   useSimulateDirectListingsLogicBuyFromListing,
-  useWatchDirectListingsLogicNewSaleEvent,
   useWriteIsethUpgradeByEth,
 } from "@/generated";
 import useAppContracts from "@/hooks/useAppContracts";
@@ -16,8 +14,14 @@ import { NATIVE_CURRENCY } from "@/lib/constants";
 import { allDefined, getSimulationArgs, getWeeklyTaxDue } from "@/lib/utils";
 import { useState } from "react";
 import { ContractFunctionArgs, formatEther } from "viem";
-import { useAccount, useBalance, useWriteContract } from "wagmi";
+import {
+  useAccount,
+  useBalance,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
 import { format, addWeeks } from "date-fns";
+import { Listing } from "@/lib/types";
 
 type BuyFromListinArgs = ContractFunctionArgs<
   typeof directListingsLogicAbi,
@@ -25,7 +29,8 @@ type BuyFromListinArgs = ContractFunctionArgs<
   "buyFromListing"
 >;
 
-const AcquireLeaseActions = ({ listingId }: { listingId: bigint }) => {
+const AcquireLeaseActions = ({ listing }: { listing: Listing }) => {
+  const { listingId, taxRate, pricePerToken, assetContract, tokenId } = listing;
   const { address } = useAccount();
   const { ethx } = useAppContracts();
   const [numberOfWeeks, setNumberOfWeeks] = useState<number>(1);
@@ -41,37 +46,15 @@ const AcquireLeaseActions = ({ listingId }: { listingId: bigint }) => {
 
   console.log(ethBalance);
 
-  const { data: listing, refetch } = useReadDirectListingsLogicGetListing({
-    args: [listingId],
-    query: {
-      enabled: listingId !== undefined,
-      select: (data) => {
-        return {
-          ...data,
-          listingId: Number(data.listingId),
-          listingIdBigInt: data.listingId,
-          taxRateBigInt: data.taxRate,
-          taxRate: Number(data.taxRate) / 100,
-          price: formatEther(data.pricePerToken),
-          owner: data.listingCreator,
-        };
-      },
-    },
-  });
-
-  const { data: owner, refetch: refetchOwner } = useReadErc721OwnerOf({
-    address: listing?.assetContract,
-    args: [listing?.tokenId ?? BigInt(0)],
-    query: {
-      enabled: Boolean(listing?.assetContract),
-    },
+  const { data: owner } = useReadErc721OwnerOf({
+    address: assetContract,
+    args: [tokenId],
   });
 
   const { writeContract: callUpgradeByEth } = useWriteIsethUpgradeByEth();
 
   const depositRent = (weeks: number) => {
-    const price = listing?.pricePerToken;
-    const taxRate = listing?.taxRateBigInt;
+    const price = pricePerToken;
 
     if (!taxRate || price === undefined) return;
 
@@ -82,39 +65,35 @@ const AcquireLeaseActions = ({ listingId }: { listingId: bigint }) => {
     });
   };
 
-  useWatchDirectListingsLogicNewSaleEvent({
-    args: {
-      listingId: listing?.listingIdBigInt,
-    },
-    onLogs: () => {
-      refetch();
-      refetchOwner();
-    },
-  });
-
   const { data: buyRequest } = useSimulateDirectListingsLogicBuyFromListing({
     args: getSimulationArgs<BuyFromListinArgs>([
-      listing?.listingIdBigInt,
+      listingId,
       address,
       BigInt(1),
       NATIVE_CURRENCY,
-      listing?.pricePerToken,
+      pricePerToken,
     ]),
-    value: listing?.pricePerToken,
+    value: pricePerToken,
     query: {
       enabled:
-        allDefined(owner, address, listing?.listingIdBigInt) &&
+        allDefined(owner, address, listingId) &&
         address?.toLowerCase() !== owner?.toLowerCase(),
     },
   });
 
-  const { writeContract } = useWriteContract();
+  const { data: hash, writeContract, isPending } = useWriteContract();
+
+  const { isLoading } = useWaitForTransactionReceipt({
+    hash,
+    query: {
+      enabled: Boolean(hash),
+    },
+  });
+
+  const takoverLoading = isPending || isLoading;
 
   const numberOfWeeksAvailable = Number(
-    (listing?.pricePerToken &&
-      (ethXBalane ?? BigInt(0)) /
-        getWeeklyTaxDue(listing?.pricePerToken, listing?.taxRateBigInt)) ??
-      0
+    (ethXBalane ?? BigInt(0)) / getWeeklyTaxDue(pricePerToken, taxRate) ?? 0
   );
 
   return (
@@ -123,10 +102,7 @@ const AcquireLeaseActions = ({ listingId }: { listingId: bigint }) => {
       <p>
         Weekly Tax Due:{" "}
         {formatEther(
-          getWeeklyTaxDue(
-            listing?.pricePerToken ?? BigInt(0),
-            listing?.taxRateBigInt ?? BigInt(0)
-          )
+          getWeeklyTaxDue(pricePerToken ?? BigInt(0), taxRate ?? BigInt(0))
         )}{" "}
         ETHx
       </p>
@@ -154,12 +130,13 @@ const AcquireLeaseActions = ({ listingId }: { listingId: bigint }) => {
       </div>
       <p>Balance {Number(formatEther(ethBalance?.value ?? BigInt(0)))} ETH</p>
       <Button
-        disabled={!Boolean(buyRequest?.request)}
+        disabled={!Boolean(buyRequest?.request) || takoverLoading}
         onClick={() => {
           writeContract(buyRequest!.request);
         }}
+        loading={takoverLoading}
       >
-        Take over lease ({listing?.price} ETH)
+        Take over lease ({formatEther(pricePerToken)} ETH)
       </Button>
     </div>
   );

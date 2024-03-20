@@ -11,51 +11,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  useReadAdCommonOwnershipGetAdGroup,
-  useReadDirectListingsLogicGetAllListings,
-} from "@/generated";
+import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { usePrivy } from "@privy-io/react-auth";
 import { useMutation } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { useAccount } from "wagmi";
+import { toast } from "sonner";
+import Link from "next/link";
+import { GroupLayoutContext } from "../context";
 
 const GroupDistributionPage = () => {
   const { user, linkFarcaster } = usePrivy();
+  const { address } = useAccount();
   const [channelName, setChannelName] = useState("");
-  const { id } = useParams();
 
-  const { data: adGroup, isSuccess } = useReadAdCommonOwnershipGetAdGroup({
-    args: [BigInt(parseInt(id as string))],
-    query: {
-      enabled: id !== undefined,
-      select: (data) => {
-        const size = Number(data.endListingId - data.startListingId) + 1;
+  const { adGroup, listings } = useContext(GroupLayoutContext);
 
-        return {
-          beneficiary: data.beneficiary,
-          startListingId: data.startListingId,
-          endListingId: data.endListingId,
-          size,
-        };
-      },
-    },
-  });
-
-  const { data: listings } = useReadDirectListingsLogicGetAllListings({
-    args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
-    query: {
-      enabled: isSuccess,
-    },
-  });
+  const isBeneficiary =
+    adGroup?.beneficiary?.toLowerCase() === address?.toLowerCase();
 
   const { mutate: pushAdOnChannel, isPending } = useMutation({
     mutationFn: (data: PublishAdsFarcasterRequestBody) => {
@@ -67,19 +41,49 @@ const GroupDistributionPage = () => {
         },
       }).then((res) => res.json());
     },
-    onError: (error) => {
-      console.error(error);
-    },
   });
 
   const submitAd = async (adListingId: string) => {
     if (!user?.farcaster?.fid) return;
 
-    pushAdOnChannel({
-      userFid: user?.farcaster?.fid,
-      channelName,
-      adListingId,
-    });
+    pushAdOnChannel(
+      {
+        userFid: user?.farcaster?.fid,
+        channelName,
+        adListingId,
+      },
+      {
+        onSuccess: (data) => {
+          if (data.error) {
+            if (data.error === "NO_CHANNEL") {
+              toast.error("Please enter a valid channel name");
+            } else if (data.error === "USER_NOT_LEAD") {
+              toast.error("You are not the lead of this channel");
+            } else if (data.error === "AD_NOT_VALID") {
+              toast.error("Ad not valid");
+            } else {
+              toast.error("An error occurred publishing the ad");
+            }
+          } else {
+            const castHash = data.cast.hash;
+            const warpcastURL = `https://warpcast.com/${channelName}/${castHash}`;
+            console.log(data);
+            toast.success(
+              <>
+                Ad published successfully!{" "}
+                <Link target="_blank" href={warpcastURL} className="underline">
+                  View on Warpcast
+                </Link>
+              </>,
+              {
+                closeButton: true,
+                duration: 60 * 60,
+              }
+            );
+          }
+        },
+      }
+    );
   };
 
   const signedInWithFarcaster = Boolean(user?.farcaster);
@@ -90,7 +94,11 @@ const GroupDistributionPage = () => {
         <CardHeader>
           <CardTitle>Farcaster Channel Distribution</CardTitle>
           <CardDescription>
-            You must be channel lead/owner in order to publish ad casts to it
+            Publish ads as frames:
+            <ul className="list-disc ml-4">
+              <li>MUST be ad group beneficiary</li>
+              <li>MUST be farcaster channel leader/owner</li>
+            </ul>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,13 +109,8 @@ const GroupDistributionPage = () => {
             placeholder="Channel Name"
             disabled={!signedInWithFarcaster}
           />
+          <Separator className="my-4" />
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead></TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
             <TableBody>
               {listings?.map((listing) => {
                 const adNumber =
@@ -120,7 +123,9 @@ const GroupDistributionPage = () => {
                     <TableCell>{adNumber}</TableCell>
                     <TableCell className="text-right">
                       <Button
-                        disabled={isPending}
+                        disabled={
+                          isPending || !isBeneficiary || !signedInWithFarcaster
+                        }
                         onClick={() => {
                           submitAd(listing.listingId.toString());
                         }}
@@ -136,7 +141,7 @@ const GroupDistributionPage = () => {
         </CardContent>
         <CardFooter className="gap-2 justify-end">
           <Button
-            disabled={signedInWithFarcaster}
+            disabled={signedInWithFarcaster || !isBeneficiary}
             className="gap-2"
             onClick={() => {
               if (!signedInWithFarcaster) linkFarcaster();

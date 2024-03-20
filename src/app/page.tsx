@@ -28,6 +28,7 @@ import {
 } from "@/generated";
 import useAppContracts from "@/hooks/useAppContracts";
 import FlowingBalance from "@/lib/superfluid";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatEther, parseEther, zeroAddress } from "viem";
 import { useAccount, useBalance } from "wagmi";
@@ -86,7 +87,7 @@ export default function Home() {
 
   return (
     <>
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Account: {address}</CardTitle>
           <CardDescription>
@@ -140,9 +141,12 @@ export default function Home() {
             >
               Downgrade All
             </Button>
+            <Button>
+              <Link href="/create-ad">Create Ad Group</Link>
+            </Button>
           </div>
         </CardFooter>
-      </Card>
+      </Card> */}
       <Card>
         <CardHeader>
           <CardTitle>Ad Groups</CardTitle>

@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   useReadAdCommonOwnershipGetAdGroup,
   useReadCfAv1ForwarderGetAccountFlowrate,
+  useReadDirectListingsLogicGetAllListings,
   useReadIsethBalanceOf,
 } from "@/generated";
 import useAppContracts from "@/hooks/useAppContracts";
@@ -20,6 +21,7 @@ import FlowingBalance from "@/lib/superfluid";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { formatEther } from "viem";
+import { GroupLayoutContext } from "./context";
 
 export default function GroupLayout({
   children,
@@ -54,17 +56,23 @@ export default function GroupLayout({
     },
   });
 
-  const { data: benefFlowRate } = useReadCfAv1ForwarderGetAccountFlowrate({
-    address: cfaV1,
-    args: adGroup?.beneficiary && [ethx, adGroup?.beneficiary],
-    query: {
-      enabled: Boolean(adGroup?.beneficiary),
-    },
-  });
+  const { data: benefFlowRate, refetch } =
+    useReadCfAv1ForwarderGetAccountFlowrate({
+      address: cfaV1,
+      args: adGroup?.beneficiary && [ethx, adGroup?.beneficiary],
+      query: {
+        enabled: Boolean(adGroup?.beneficiary),
+      },
+    });
+
+  const { data: listings, refetch: fetchListings } =
+    useReadDirectListingsLogicGetAllListings({
+      args: adGroup && [adGroup?.startListingId, adGroup?.endListingId],
+    });
 
   return (
-    <div className="flex flex-row items-start gap-2">
-      <Card className="fixed w-[400px]">
+    <div className="flex flex-col md:flex-row items-start gap-2">
+      <Card className="md:fixed relative w-full sm:w-[400px]">
         <CardHeader>
           <CardTitle>Group #{id}</CardTitle>
           <CardDescription>
@@ -105,7 +113,24 @@ export default function GroupLayout({
           </div>
         </CardContent>
       </Card>
-      <div className="ml-[calc(400px+1em)] w-full">{children}</div>
+      <div className="md:ml-[calc(400px+1em)] w-full">
+        {adGroup && listings && (
+          <GroupLayoutContext.Provider
+            value={{
+              adGroup: adGroup,
+              listings,
+              refetchAdGroup: () => {
+                refetch();
+              },
+              refetchListings: () => {
+                fetchListings();
+              },
+            }}
+          >
+            {children}
+          </GroupLayoutContext.Provider>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,12 @@
 import { adCommonOwnershipAbi, directListingsLogicAbi } from "@/generated";
 import { ContractFunctionReturnType } from "viem";
 
+export type Listings = ContractFunctionReturnType<
+  typeof directListingsLogicAbi,
+  "view",
+  "getAllListings"
+>;
+
 export type Listing = ContractFunctionReturnType<
   typeof directListingsLogicAbi,
   "view",
