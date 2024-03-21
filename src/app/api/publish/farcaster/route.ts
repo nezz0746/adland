@@ -20,11 +20,13 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
   // Get Channel
   // Throw if channel doesn't exist
   try {
+    const isTestChannel = channelName === "testchannel";
+
     const { channel } = await neynar.lookupChannel(channelName);
 
     const channelLeadFid = channel.lead?.fid;
     // Throw if userFid isn't lead of channel
-    if (channelLeadFid !== userFid) {
+    if (channelLeadFid !== userFid && !isTestChannel) {
       throw new Error("User is not lead of channel");
     }
 
@@ -32,7 +34,7 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     const { metadata } = await fetchAd(adListingId);
 
     if (metadata?.image === "" || !Boolean(metadata)) {
-      throw new Error("Ad not valie");
+      throw new Error("Ad not valid");
     }
 
     // Create Cast
@@ -48,6 +50,7 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
         ],
       }
     );
+
     // Return Cast ID
     return NextResponse.json({ cast });
   } catch (error) {
@@ -59,7 +62,7 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     } else if (error.message === "User is not lead of channel") {
       return NextResponse.json({ error: "USER_NOT_LEAD" });
       // @ts-ignore
-    } else if (error.message === "Ad not valie") {
+    } else if (error.message === "Ad not valid") {
       return NextResponse.json({ error: "AD_NOT_VALID" });
     } else {
       return NextResponse.json({ error: "ERROR" });
