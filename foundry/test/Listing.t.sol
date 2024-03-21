@@ -405,6 +405,43 @@ contract ListingTest is ListingBase {
         marketplace.setTokenX(address(dai), address(daix));
     }
 
+    function testCancelListing() public {
+        adCommons.createAdGroup(
+            beneficiary,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice,
+            baseTaxRateBPS,
+            3
+        );
+
+        address buyer = _getAccount(69, 1000 ether);
+
+        _grantMaxFlowPermissions(ethx, buyer, address(marketplace));
+
+        _upgradeETH(ethx, buyer, 1 ether);
+
+        vm.prank(buyer);
+        marketplace.buyFromListing{value: initialPrice}(
+            1,
+            buyer,
+            DEFAULT_QUANTITY,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice
+        );
+
+        assertEq(
+            _getFlowRate(address(ethx), buyer, beneficiary),
+            _computeFlowRate(baseTaxRateBPS, initialPrice)
+        );
+        assertEq(adCommons.ownerOf(1), buyer);
+
+        vm.prank(buyer);
+        marketplace.cancelListing(1);
+
+        assertEq(_getFlowRate(address(ethx), buyer, beneficiary), 0);
+        assertEq(adCommons.ownerOf(1), beneficiary);
+    }
+
     ////////////////////////// HELPERS //////////////////////////
 
     function _getFlowRate(
@@ -455,7 +492,7 @@ contract ListingTest is ListingBase {
         console.log("timestamp            :", timestamp);
     }
 
-    function _getFlowRate(
+    function _computeFlowRate(
         uint256 taxRateBPS,
         uint256 price
     ) internal pure returns (int96) {
