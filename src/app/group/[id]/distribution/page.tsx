@@ -67,7 +67,7 @@ const GroupDistributionPage = () => {
           } else {
             const castHash = data.cast.hash;
             const warpcastURL = `https://warpcast.com/${channelName}/${castHash}`;
-            console.log(data);
+
             toast.success(
               <>
                 Ad published successfully!{" "}
@@ -99,6 +99,11 @@ const GroupDistributionPage = () => {
               <li>MUST be ad group beneficiary</li>
               <li>MUST be farcaster channel leader/owner</li>
             </ul>
+            <p>
+              Note: You can publish test ads in the{" "}
+              <span className="font-bold">/testchannel</span> channel without
+              being the lead.
+            </p>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -106,7 +111,7 @@ const GroupDistributionPage = () => {
             type="text"
             value={channelName}
             onChange={(e) => setChannelName(e.target.value)}
-            placeholder="Channel Name"
+            placeholder="Type you channel name here... (or testchannel)"
             disabled={!signedInWithFarcaster}
           />
           <Separator className="my-4" />
