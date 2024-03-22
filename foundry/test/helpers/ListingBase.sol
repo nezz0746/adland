@@ -171,7 +171,7 @@ contract ListingBase is DSTestFull, IExtension {
             implementation: directListings
         });
 
-        extensionDirectListings.functions = new ExtensionFunction[](14);
+        extensionDirectListings.functions = new ExtensionFunction[](15);
         extensionDirectListings.functions[0] = ExtensionFunction(
             DirectListingsLogic.totalListings.selector,
             "totalListings()"
@@ -199,6 +199,10 @@ contract ListingBase is DSTestFull, IExtension {
         extensionDirectListings.functions[6] = ExtensionFunction(
             DirectListingsLogic.cancelListing.selector,
             "cancelListing(uint256)"
+        );
+        extensionDirectListings.functions[14] = ExtensionFunction(
+            DirectListingsLogic.forecloseListing.selector,
+            "forecloseListing(uint256)"
         );
         extensionDirectListings.functions[7] = ExtensionFunction(
             DirectListingsLogic.approveBuyerForListing.selector,
