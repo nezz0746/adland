@@ -134,10 +134,8 @@ contract ListingTest is ListingBase {
         vm.expectRevert("NFT: Only marketplace can transfer");
         adCommons.safeTransferFrom(buyer2, vm.addr(22), 1);
 
-        (, int96 flowRate, , ) = _logFlowInfo(buyer, beneficiary);
-
         // Expect flow for buyer to be stopped
-        assertEq(flowRate, 0);
+        assertEq(_getFlowRate(address(ethx), buyer, beneficiary), 0);
 
         // Test Buyer 2 can set ad uri
         vm.prank(buyer);
@@ -440,6 +438,66 @@ contract ListingTest is ListingBase {
 
         assertEq(_getFlowRate(address(ethx), buyer, beneficiary), 0);
         assertEq(adCommons.ownerOf(1), beneficiary);
+    }
+
+    function testForecloseListing() public {
+        adCommons.createAdGroup(
+            beneficiary,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice,
+            baseTaxRateBPS,
+            3
+        );
+
+        address buyer = _getAccount(69, 1000 ether);
+
+        _grantMaxFlowPermissions(ethx, buyer, address(marketplace));
+
+        _upgradeETH(ethx, buyer, _taxDuePerWeek(baseTaxRateBPS, initialPrice));
+
+        vm.prank(buyer);
+        marketplace.buyFromListing{value: initialPrice}(
+            1,
+            buyer,
+            DEFAULT_QUANTITY,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice
+        );
+
+        vm.warp(block.timestamp + 7 days);
+
+        vm.prank(beneficiary);
+        marketplace.forecloseListing(1);
+
+        assertEq(adCommons.ownerOf(1), beneficiary);
+        assertEq(_getFlowRate(address(ethx), buyer, beneficiary), 0);
+
+        _upgradeETH(ethx, buyer, _taxDuePerWeek(baseTaxRateBPS, initialPrice));
+        vm.prank(buyer);
+        marketplace.buyFromListing{value: initialPrice}(
+            1,
+            buyer,
+            DEFAULT_QUANTITY,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice
+        );
+
+        vm.warp(block.timestamp + 7 days);
+
+        address landlord = _getAccount(420, 1000 ether);
+
+        vm.prank(landlord);
+        vm.expectRevert("Marketplace: not tax beneficiary or landlord");
+        marketplace.forecloseListing(1);
+
+        vm.prank(deployer);
+        MarketplaceV3(payable(address(marketplace))).grantRole(
+            keccak256("LANDLORD_ROLE"),
+            landlord
+        );
+
+        vm.prank(landlord);
+        marketplace.forecloseListing(1);
     }
 
     ////////////////////////// HELPERS //////////////////////////
