@@ -8,6 +8,9 @@
 [submodule "foundry/lib/contracts"]
 	path = foundry/lib/contracts
 	url = https://github.com/nezz0746/contracts
+[submodule "foundry/lib/accounts"]
+	path = foundry/lib/accounts
+	url = https://github.com/tokenbound/contracts
 [submodule "foundry/lib/superfluid-protocol-monorepo"]
 	path = foundry/lib/superfluid-protocol-monorepo
 	url = https://github.com/superfluid-finance/protocol-monorepo
