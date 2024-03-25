@@ -15,7 +15,8 @@ import { truncateAddress } from "@/lib/utils";
 import { initialChain } from "@/lib/constants";
 
 export const ConnectButton = () => {
-  const { ready, authenticated, login, logout, user } = usePrivy();
+  const { ready, authenticated, login, logout, user, connectWallet } =
+    usePrivy();
   const { wallets } = useWallets();
   const { address } = useAccount();
 
@@ -39,7 +40,11 @@ export const ConnectButton = () => {
     return (
       <Button
         onClick={() => {
-          wallet.switchChain(initialChain.id);
+          if (!wallet) {
+            connectWallet();
+          } else {
+            wallet.switchChain(initialChain.id);
+          }
         }}
         type="button"
       >
