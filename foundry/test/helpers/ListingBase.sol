@@ -19,6 +19,12 @@ import {MockERC20} from "../mocks/MockERC20.sol";
 import {AdCommonOwnership} from "../../src/AdCommonOwnership.sol";
 import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {ERC1820RegistryCompiled} from "@superfluid-finance/ethereum-contracts/contracts/libs/ERC1820RegistryCompiled.sol";
+import {ERC6551Registry} from "erc6551/ERC6551Registry.sol";
+import {AccountV3Upgradable, AccountV3} from "tokenbound/AccountV3Upgradable.sol";
+import {AccountProxy} from "tokenbound/AccountProxy.sol";
+import {AccountGuardian} from "tokenbound/AccountGuardian.sol";
+import {Multicall3} from "multicall-authenticated/Multicall3.sol";
+import {AccountCreatorConfig} from "../../src/ERC6551AccountCreator.sol";
 
 contract ListingBase is DSTestFull, IExtension {
     address wethSepolia = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9;
@@ -31,13 +37,36 @@ contract ListingBase is DSTestFull, IExtension {
     DirectListingsLogic public marketplace;
     AdCommonOwnership public adCommons;
     address internal deployer = vm.addr(420);
-    address internal beneficiary = vm.addr(421);
+    address internal recipient = vm.addr(421);
     uint256 initialPrice = 0.1 ether;
 
     TestToken public dai;
     ISuperToken public daix;
     ISuperToken public ethx;
     ConstantFlowAgreementV1 public cfa;
+
+    ERC6551Registry registry;
+    AccountProxy accountProxy;
+    AccountGuardian guardian;
+    Multicall3 forwarder;
+    AccountV3 implementation;
+
+    constructor() {
+        registry = new ERC6551Registry();
+        forwarder = new Multicall3();
+        guardian = new AccountGuardian(address(this));
+        implementation = new AccountV3(
+            address(1),
+            address(forwarder),
+            address(registry),
+            address(guardian)
+        );
+
+        accountProxy = new AccountProxy(
+            address(guardian),
+            address(implementation)
+        );
+    }
 
     function setUp() public {
         vm.etch(ERC1820RegistryCompiled.at, ERC1820RegistryCompiled.bin);
@@ -53,7 +82,15 @@ contract ListingBase is DSTestFull, IExtension {
 
         vm.label(address(marketplace), "marketplace");
 
-        adCommons = new AdCommonOwnership(address(marketplace), "");
+        adCommons = new AdCommonOwnership(
+            address(marketplace),
+            AccountCreatorConfig(
+                registry,
+                address(implementation),
+                address(accountProxy)
+            ),
+            ""
+        );
 
         _grantTaxManagerRole(deployer);
 
@@ -79,7 +116,7 @@ contract ListingBase is DSTestFull, IExtension {
         );
 
         label(address(adCommons), "adCommons");
-        label(beneficiary, "beneficiary");
+        label(recipient, "recipient");
 
         vm.stopPrank();
     }

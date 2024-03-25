@@ -15,6 +15,8 @@ import {SuperTokenV1Library} from "@superfluid-finance/ethereum-contracts/contra
 import {ISETH} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/tokens/ISETH.sol";
 import {StreamCreator} from "./mocks/StreamCreator.sol";
 import {TestToken} from "@superfluid-finance/ethereum-contracts/contracts/utils/TestToken.sol";
+import {AdBeneficiary} from "../src/AdBeneficiary.sol";
+import {ERC6551Registry} from "erc6551/ERC6551Registry.sol";
 
 contract ListingTest is ListingBase {
     using SuperTokenV1Library for ISuperToken;
@@ -22,9 +24,21 @@ contract ListingTest is ListingBase {
     uint256 constant MAX_BPS = 10_000;
     uint256 constant DEFAULT_QUANTITY = 1;
 
+    function testAdBeneficiaryCreation() public {
+        AdBeneficiary adBenef = adCommons.adBeneficiary();
+
+        vm.expectRevert("Ownable: caller is not the owner");
+        adBenef.createBeneficiary(vm.addr(69));
+
+        vm.prank(address(adCommons));
+        adBenef.createBeneficiary(vm.addr(69));
+
+        assertEq(adBenef.ownerOf(1), vm.addr(69));
+    }
+
     function testCreateAdGroup() public {
         adCommons.createAdGroup(
-            beneficiary,
+            recipient,
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice,
             baseTaxRateBPS,
@@ -57,13 +71,14 @@ contract ListingTest is ListingBase {
     }
 
     function testBuyListingETH() public {
-        adCommons.createAdGroup(
-            beneficiary,
+        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+            recipient,
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice,
             baseTaxRateBPS,
             3
         );
+        address beneficiary = group.beneficiary;
 
         address buyer = _getAccount(69, 1000 ether);
 
@@ -147,13 +162,14 @@ contract ListingTest is ListingBase {
     }
 
     function testBuyMultipleListings() public {
-        adCommons.createAdGroup(
-            beneficiary,
+        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+            recipient,
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice,
             baseTaxRateBPS,
             3
         );
+        address beneficiary = group.beneficiary;
 
         address buyer = _getAccount(69, 1000 ether);
 
@@ -224,13 +240,14 @@ contract ListingTest is ListingBase {
         uint256 initialPriceInDai = 100e18; // 100 DAI
         uint256 taxRateBPS = 120; // 1.2% per month
 
-        adCommons.createAdGroup(
-            beneficiary,
+        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+            recipient,
             address(dai),
             initialPriceInDai,
-            taxRateBPS,
+            baseTaxRateBPS,
             3
         );
+        address beneficiary = group.beneficiary;
 
         address buyer = _getAccount(69, 1000 ether);
 
@@ -258,13 +275,14 @@ contract ListingTest is ListingBase {
     }
 
     function testSelfAssessListingPrice() public {
-        adCommons.createAdGroup(
-            beneficiary,
+        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+            recipient,
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice,
             baseTaxRateBPS,
             3
         );
+        address beneficiary = group.beneficiary;
 
         IDirectListings.Listing memory listing = marketplace.getListing(1);
 
@@ -404,13 +422,14 @@ contract ListingTest is ListingBase {
     }
 
     function testCancelListing() public {
-        adCommons.createAdGroup(
-            beneficiary,
+        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+            recipient,
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice,
             baseTaxRateBPS,
             3
         );
+        address beneficiary = group.beneficiary;
 
         address buyer = _getAccount(69, 1000 ether);
 
@@ -441,13 +460,14 @@ contract ListingTest is ListingBase {
     }
 
     function testForecloseListing() public {
-        adCommons.createAdGroup(
-            beneficiary,
+        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+            recipient,
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice,
             baseTaxRateBPS,
             3
         );
+        address beneficiary = group.beneficiary;
 
         address buyer = _getAccount(69, 1000 ether);
 

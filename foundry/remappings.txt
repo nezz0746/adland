@@ -5,3 +5,4 @@ prb/test/=lib/prb-test/src/
 @prb/math/=lib/prb-math/
 tokenbound/=lib/accounts/src/
 erc6551/=lib/accounts/lib/erc6551/src/
+multicall-authenticated/=lib/accounts/lib/multicall-authenticated/src
