@@ -12,6 +12,10 @@ import "@thirdweb-dev/dynamic-contracts/src/interface/IExtension.sol";
 import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {TestToken} from "@superfluid-finance/ethereum-contracts/contracts/utils/TestToken.sol";
 import {ISuperfluid, ISuperToken} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
+import {ERC6551Registry} from "erc6551/ERC6551Registry.sol";
+import {AccountV3Upgradable, AccountV3} from "tokenbound/AccountV3Upgradable.sol";
+import {AccountProxy} from "tokenbound/AccountProxy.sol";
+import {AccountCreatorConfig} from "../src/ERC6551AccountCreator.sol";
 
 interface IPaymaster {
     function deposit() external payable;
@@ -33,6 +37,15 @@ contract MarketplaceScript is BaseScript, IExtension {
     address daixOptimismSepolia = 0xD6FAF98BeFA647403cc56bDB598690660D5257d2;
     address ethXOptimismSepolia = 0x0043d7c85C8b96a49A72A92C0B48CdC4720437d7;
     address cfav1OptimismSepolia = 0x8a3170AdbC67233196371226141736E4151e7C26;
+
+    ERC6551Registry public registry =
+        ERC6551Registry(0x000000006551c19487814612e58FE06813775758);
+    AccountProxy public accountProxy =
+        AccountProxy(payable(0x55266d75D1a14E4572138116aF39863Ed6596E7F));
+    AccountV3Upgradable public implementation =
+        AccountV3Upgradable(
+            payable(0x41C8f39463A868d3A88af00cd0fe7102F30E44eC)
+        );
 
     function _initialize() internal {
         if (currentChain == DeployementChain.Sepolia) {
@@ -78,6 +91,11 @@ contract MarketplaceScript is BaseScript, IExtension {
 
         AdCommonOwnership adCommons = new AdCommonOwnership(
             address(marketplace),
+            AccountCreatorConfig(
+                registry,
+                address(implementation),
+                address(accountProxy)
+            ),
             "ipfs://QmVg1sVvrWJ78cEmuxKpnHDKCWcCM8y8VaAJ8gpfe55ut6"
         );
 

@@ -4,6 +4,8 @@ pragma solidity ^0.8.19;
 import {IDirectListings} from "contracts/prebuilts/marketplace/IMarketplace.sol";
 import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {ERC721Royalty, ERC721} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
+import {AccountCreatorConfig} from "./ERC6551AccountCreator.sol";
+import {AdBeneficiary} from "./AdBeneficiary.sol";
 
 contract AdCommonOwnership is ERC721Royalty {
     uint256 constant MAX_BPS = 10_000;
@@ -11,6 +13,8 @@ contract AdCommonOwnership is ERC721Royalty {
     uint256 constant MAX_GROUP_SIZE = 20;
 
     IDirectListings marketplace;
+
+    AdBeneficiary public adBeneficiary;
 
     struct AdGroup {
         address beneficiary;
@@ -36,28 +40,33 @@ contract AdCommonOwnership is ERC721Royalty {
 
     constructor(
         address _marketplace,
+        AccountCreatorConfig memory _accountConfig,
         string memory _placeholderURI
     ) ERC721("AdCommonOwnership", "ACO") {
         marketplace = IDirectListings(_marketplace);
+        adBeneficiary = new AdBeneficiary(_accountConfig);
         placeholderURI = _placeholderURI;
     }
 
     /// @notice Create a group of listings and transfer them to a beneficiary
-    /// @param beneficiary The address that will receive the NFTs
+    /// @param recipient The address of the beneficiary NFT recipient
     /// @param currency The currency to use for the listings
     /// @param initialPrice The initial price for the listings
     /// @param taxRate The tax rate for the listings (in BPS, i.e. 10000 = 100%)
     /// @param size The number of listings to create
     function createAdGroup(
-        address beneficiary,
+        address recipient,
         address currency,
         uint256 initialPrice,
         uint256 taxRate,
         uint8 size
-    ) public {
+    ) public returns (AdGroup memory adGroup) {
         require(taxRate < MAX_BPS, "AdCommonOwnership: Tax rate too high");
         // We use listingId as tokenId as they are perpetual
         uint256 nextStartListingId = marketplace.totalListings();
+
+        // Create smart account for beneficiary
+        address beneficiary = adBeneficiary.createBeneficiary(recipient);
 
         for (
             uint256 i = nextStartListingId;
@@ -89,11 +98,13 @@ contract AdCommonOwnership is ERC721Royalty {
 
         group++;
 
-        adGroups[group] = AdGroup(
+        adGroup = AdGroup(
             beneficiary,
             nextStartListingId,
             nextStartListingId + size - 1
         );
+
+        adGroups[group] = adGroup;
 
         emit AdGroupCreated(group, beneficiary, size);
     }
