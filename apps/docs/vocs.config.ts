@@ -1,15 +1,11 @@
-import { defineConfig } from 'vocs'
+import { defineConfig } from "vocs";
 
 export default defineConfig({
-  title: 'Docs',
+  title: "AdLand",
   sidebar: [
     {
-      text: 'Getting Started',
-      link: '/getting-started',
-    },
-    {
-      text: 'Example',
-      link: '/example',
+      text: "What is Adland ?",
+      link: "/what-is-adland",
     },
   ],
-})
+});
