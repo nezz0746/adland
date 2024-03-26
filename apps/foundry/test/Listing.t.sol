@@ -24,6 +24,37 @@ contract ListingTest is ListingBase {
     uint256 constant MAX_BPS = 10_000;
     uint256 constant DEFAULT_QUANTITY = 1;
 
+    function testCannotTransferAsOwnerOfListing() public {
+        adCommons.createAdGroup(
+            recipient,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice,
+            baseTaxRateBPS,
+            3
+        );
+
+        address buyer = _getAccount(69, 1000 ether);
+
+        _grantMaxFlowPermissions(ethx, buyer, address(marketplace));
+
+        _upgradeETH(ethx, buyer, _taxDuePerWeek(baseTaxRateBPS, initialPrice));
+
+        vm.prank(buyer);
+        marketplace.buyFromListing{value: initialPrice}(
+            1,
+            buyer,
+            DEFAULT_QUANTITY,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice
+        );
+
+        assertEq(adCommons.ownerOf(1), buyer);
+
+        vm.prank(buyer);
+        vm.expectRevert("NFT: Only marketplace can transfer");
+        adCommons.transferFrom(buyer, vm.addr(111), 1);
+    }
+
     function testAdBeneficiaryCreation() public {
         AdBeneficiary adBenef = adCommons.adBeneficiary();
 

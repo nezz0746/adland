@@ -31,12 +31,25 @@ the right to manage that revenue. Any strategies can then be implemented for dis
 4. Finally, as of writing, *Ad Data* is simply stored as a uri in the Ad contract.  
 
 ### Perpetual Listings
-{/* TODO: Describe the inner working of the marketplace with directlistings while remaining brief */}
+
+Adland's marketplace makes assets available for purchase at any time by making listings **perpetual**: when a purchase is made, the listing is still up. Thus the ERC721 token behind each
+listing only represents the current owner of the asset (making them "Marketplacebound" NFTs).
+
 ### Taxes
-{/* TODO: Describe the tax streaming while remaining brief */}
+
+Taxes are paid by advertisers to the AdGroupAdming in the form of payment streams. They are paid in [Superfluid SuperTokens](https://docs.superfluid.finance/docs/concepts/overview/super-tokens) streams managed directly by the marketplace during
+the lifecycle of each AdSpace leases.
+- On purchase, a stream from buyer to AdGroupAdmin is created while the stream from seller to AdGroupAdmin is closed. 
+- On self-assessment, the stream to be proportional to the self-assessed value and the tax rate.
+- On renouncement, the stream is closed.
+- On forclosure, the stream is closed and the asset is put back on the market by the AdGroupAdmin.
+
 ### AdGroupAdmin
-{/* TODO: Describe what group admins are while remaining brief */}
+
+AdGroup creators are handed a AdGroupAdmin tokenbound smart account to manage the AdGroup.
+
 ### AdSpace
-{/* TODO: Describe what Ad Space are and how ad data is handles are while remaining brief */}
+
+AdSpaces are the ad space ownership certificates needed in order to submit your adversiting data.
 
 
