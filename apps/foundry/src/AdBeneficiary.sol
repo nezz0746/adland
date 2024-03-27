@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {ERC6551AccountCreator, AccountCreatorConfig} from "./ERC6551AccountCreator.sol";
+import {ERC6551AccountCreator, AccountCreatorConfig} from "./lib/ERC6551AccountCreator.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract AdBeneficiary is ERC6551AccountCreator, ERC721, Ownable {

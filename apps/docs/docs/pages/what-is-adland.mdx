@@ -1,0 +1,55 @@
+# What is AdLand ?
+
+Adland is a simple advertising protocol that allows any community to earn
+revenue from onchain advertising spaces in a transparent, decentralized & efficient manner. The advertising spaces are held
+by advertisers in the form of a plurally owned asset.
+
+Contrary to private property, **plural property** is a system of ownership where assets belong to no one and
+everyone and are ruled by the following principles:
+
+1. An asset owner must **self-assess** its value and broadcast it to the community.
+2. Anyone should be able to **buy the asset at any time**. Owners cannot refuse to sell.
+3. Asset owners must **pay a tax** to the community that is directly proportional to the self-assessed value.
+
+Learn more about plural property here: [RadicalxChange](https://www.radicalxchange.org/)
+
+## How it works
+
+![AdLand](/protocol.png)
+
+1. An individual or community decide it needs revenue in order to grow or sustain itself. They
+can open a number of **AdSpaces** on the protocol specifying an initial price and tax rate (in % of asset price / week).
+
+2. Advertisers can now buy theses inidividual *AdSpaces*. In the case of plural property, the buyer is actually
+acquire a lease certificate (in the form of an NFT) which he can then manage as he pleases, by self-assessing
+price and mangagin the Ad data. As soon as a advertiser buys an *AdSpaces*, he'll start streaming (second-by-second token transfers) tax to the AdGroup
+admin.
+
+3. **AdGroupAdmins** are smart accounts that recieve all revenue from tax and purchases (from initial sales or renounced asset resale) and
+the right to manage that revenue. Any strategies can then be implemented for distribution (managed, split, pool, ...).
+
+4. Finally, *AdSpace* owners can set the data for their ad space, while *AdGroupAdmins* can set a custom AdStrategy to incorporate their own logic for resolving ad data.
+
+### Perpetual Listings
+
+Adland's marketplace makes assets available for purchase at any time by making listings **perpetual**: when a purchase is made, the listing is still up. Thus the ERC721 token behind each
+listing only represents the current owner of the asset (making them "Marketplacebound" NFTs).
+
+### Taxes
+
+Taxes are paid by advertisers to the AdGroupAdming in the form of payment streams. They are paid in [Superfluid SuperTokens](https://docs.superfluid.finance/docs/concepts/overview/super-tokens) streams managed directly by the marketplace during
+the lifecycle of each *AdSpaces* leases.
+- On purchase, a stream from buyer to AdGroupAdmin is created while the stream from seller to AdGroupAdmin is closed. 
+- On self-assessment, the stream to be proportional to the self-assessed value and the tax rate.
+- On renouncement, the stream is closed.
+- On forclosure, the stream is closed and the asset is put back on the market by the AdGroupAdmin.
+
+### AdGroupAdmin
+
+AdGroup creators are handed a AdGroupAdmin tokenbound smart account to manage the AdGroup.
+
+### AdSpace
+
+AdSpaces are the ad space ownership certificates needed in order to submit your adversiting data.
+
+

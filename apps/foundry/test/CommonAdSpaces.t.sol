@@ -2,14 +2,12 @@
 pragma solidity ^0.8.19;
 
 import {console} from "forge-std/Test.sol";
-import {ListingBase, ISuperToken, SuperToken} from "./helpers/ListingBase.sol";
-import {WETH9} from "../src/mocks/WETH9.sol";
+import {CommonAdSpacesBase, ISuperToken, SuperToken} from "./helpers/CommonAdSpacesBase.sol";
+import {WETH9} from "../test/mocks/WETH9.sol";
 import {DirectListingsLogic} from "contracts/prebuilts/marketplace/direct-listings/DirectListingsLogic.sol";
-import {AdCommonOwnership} from "../src/AdCommonOwnership.sol";
 import {MarketplaceV3} from "contracts/prebuilts/marketplace/entrypoint/MarketplaceV3.sol";
 import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {IDirectListings} from "contracts/prebuilts/marketplace/IMarketplace.sol";
-import {FlowSender} from "./helpers/FlowSender.t.sol";
 import {UD60x18, ud, intoUint256} from "@prb/math/src/UD60x18.sol";
 import {SuperTokenV1Library} from "@superfluid-finance/ethereum-contracts/contracts/apps/SuperTokenV1Library.sol";
 import {ISETH} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/tokens/ISETH.sol";
@@ -18,34 +16,71 @@ import {TestToken} from "@superfluid-finance/ethereum-contracts/contracts/utils/
 import {AdBeneficiary} from "../src/AdBeneficiary.sol";
 import {ERC6551Registry} from "erc6551/ERC6551Registry.sol";
 
-contract ListingTest is ListingBase {
+import {AdSpaceConfig} from "../src/CommonAdSpaces.sol";
+import {CommonAdGroupAdminFactory} from "../src/CommonAdGroupAdminFactory.sol";
+
+contract CommonAdSpacesTest is CommonAdSpacesBase {
     using SuperTokenV1Library for ISuperToken;
     uint256 constant baseTaxRateBPS = 120; // 1.2% per month
     uint256 constant MAX_BPS = 10_000;
     uint256 constant DEFAULT_QUANTITY = 1;
 
-    function testAdBeneficiaryCreation() public {
-        AdBeneficiary adBenef = adCommons.adBeneficiary();
-
-        vm.expectRevert("Ownable: caller is not the owner");
-        adBenef.createBeneficiary(vm.addr(69));
-
-        vm.prank(address(adCommons));
-        adBenef.createBeneficiary(vm.addr(69));
-
-        assertEq(adBenef.ownerOf(1), vm.addr(69));
-    }
-
-    function testCreateAdGroup() public {
-        adCommons.createAdGroup(
+    function testCannotTransferAsOwnerOfListing() public {
+        commonAds.createAdGroup(
             recipient,
-            CurrencyTransferLib.NATIVE_TOKEN,
-            initialPrice,
-            baseTaxRateBPS,
+            AdSpaceConfig({
+                currency: CurrencyTransferLib.NATIVE_TOKEN,
+                initialPrice: initialPrice,
+                taxRate: baseTaxRateBPS
+            }),
             3
         );
 
-        assertEq(adCommons.getAdGroupSize(1), 3);
+        address buyer = _getAccount(69, 1000 ether);
+
+        _grantMaxFlowPermissions(ethx, buyer, address(marketplace));
+
+        _upgradeETH(ethx, buyer, _taxDuePerWeek(baseTaxRateBPS, initialPrice));
+
+        vm.prank(buyer);
+        marketplace.buyFromListing{value: initialPrice}(
+            1,
+            buyer,
+            DEFAULT_QUANTITY,
+            CurrencyTransferLib.NATIVE_TOKEN,
+            initialPrice
+        );
+
+        assertEq(commonAds.ownerOf(1), buyer);
+
+        vm.prank(buyer);
+        vm.expectRevert("CommonAdSpaces: Only marketplace can transfer");
+        commonAds.transferFrom(buyer, vm.addr(111), 1);
+    }
+
+    function testCommonAdGroupAdminFactory() public {
+        CommonAdGroupAdminFactory adminFactory = commonAds
+            .adGroupAdminFactory();
+
+        vm.expectRevert("Ownable: caller is not the owner");
+        adminFactory.createGroupAdmin(vm.addr(69));
+
+        vm.prank(address(commonAds));
+        adminFactory.createGroupAdmin(vm.addr(69));
+
+        assertEq(adminFactory.ownerOf(1), vm.addr(69));
+    }
+
+    function testCreateAdGroup() public {
+        commonAds.createAdGroup(
+            recipient,
+            AdSpaceConfig({
+                currency: CurrencyTransferLib.NATIVE_TOKEN,
+                initialPrice: initialPrice,
+                taxRate: baseTaxRateBPS
+            }),
+            3
+        );
     }
 
     function testStreamCreator() public {
@@ -71,14 +106,15 @@ contract ListingTest is ListingBase {
     }
 
     function testBuyListingETH() public {
-        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+        (address admin, ) = commonAds.createAdGroup(
             recipient,
-            CurrencyTransferLib.NATIVE_TOKEN,
-            initialPrice,
-            baseTaxRateBPS,
+            AdSpaceConfig({
+                currency: CurrencyTransferLib.NATIVE_TOKEN,
+                initialPrice: initialPrice,
+                taxRate: baseTaxRateBPS
+            }),
             3
         );
-        address beneficiary = group.beneficiary;
 
         address buyer = _getAccount(69, 1000 ether);
 
@@ -105,8 +141,8 @@ contract ListingTest is ListingBase {
         // Add missing amount
         _upgradeETH(ethx, buyer, missingAmount);
 
-        assertEq(adCommons.ownerOf(1), beneficiary);
-        assertEq(beneficiary.balance, 0);
+        assertEq(commonAds.ownerOf(1), admin);
+        assertEq(admin.balance, 0);
 
         vm.prank(buyer);
         marketplace.buyFromListing{value: initialPrice}(
@@ -119,8 +155,8 @@ contract ListingTest is ListingBase {
 
         vm.warp(block.timestamp + 1 days);
 
-        assertEq(beneficiary.balance, initialPrice);
-        assertEq(adCommons.ownerOf(1), buyer);
+        assertEq(admin.balance, initialPrice);
+        assertEq(commonAds.ownerOf(1), buyer);
 
         IDirectListings.Listing memory listing = marketplace.getListing(1);
 
@@ -144,32 +180,33 @@ contract ListingTest is ListingBase {
             initialPrice
         );
 
-        assertEq(adCommons.ownerOf(1), buyer2);
+        assertEq(commonAds.ownerOf(1), buyer2);
         vm.prank(buyer2);
-        vm.expectRevert("NFT: Only marketplace can transfer");
-        adCommons.safeTransferFrom(buyer2, vm.addr(22), 1);
+        vm.expectRevert("CommonAdSpaces: Only marketplace can transfer");
+        commonAds.safeTransferFrom(buyer2, vm.addr(22), 1);
 
         // Expect flow for buyer to be stopped
-        assertEq(_getFlowRate(address(ethx), buyer, beneficiary), 0);
+        assertEq(_getFlowRate(address(ethx), buyer, admin), 0);
 
         // Test Buyer 2 can set ad uri
         vm.prank(buyer);
-        vm.expectRevert("AdCommonOwnership: Not owner");
-        adCommons.setAdUri(1, "https://www.google.com");
+        vm.expectRevert("CommonAdSpaces: Not ad owner");
+        commonAds.updateAdURI(1, "https://www.google.com");
 
         vm.prank(buyer2);
-        adCommons.setAdUri(1, "https://www.google.com");
+        commonAds.updateAdURI(1, "https://www.google.com");
     }
 
     function testBuyMultipleListings() public {
-        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+        (address admin, ) = commonAds.createAdGroup(
             recipient,
-            CurrencyTransferLib.NATIVE_TOKEN,
-            initialPrice,
-            baseTaxRateBPS,
+            AdSpaceConfig({
+                currency: CurrencyTransferLib.NATIVE_TOKEN,
+                initialPrice: initialPrice,
+                taxRate: baseTaxRateBPS
+            }),
             3
         );
-        address beneficiary = group.beneficiary;
 
         address buyer = _getAccount(69, 1000 ether);
 
@@ -187,7 +224,7 @@ contract ListingTest is ListingBase {
 
         assertEq(
             _computeAssetFlowRate(baseTaxRateBPS, initialPrice),
-            _getFlowRate(address(ethx), buyer, beneficiary)
+            _getFlowRate(address(ethx), buyer, admin)
         );
 
         vm.prank(buyer);
@@ -201,7 +238,7 @@ contract ListingTest is ListingBase {
 
         assertEq(
             _computeAssetFlowRate(baseTaxRateBPS, initialPrice) * 2,
-            _getFlowRate(address(ethx), buyer, beneficiary)
+            _getFlowRate(address(ethx), buyer, admin)
         );
 
         address buyer2 = _getAccount(22, 1000 ether);
@@ -221,7 +258,7 @@ contract ListingTest is ListingBase {
 
         assertEq(
             _computeAssetFlowRate(baseTaxRateBPS, initialPrice),
-            _getFlowRate(address(ethx), buyer, beneficiary)
+            _getFlowRate(address(ethx), buyer, admin)
         );
 
         vm.prank(buyer2);
@@ -233,21 +270,22 @@ contract ListingTest is ListingBase {
             initialPrice
         );
 
-        assertEq(0, _getFlowRate(address(ethx), buyer, beneficiary));
+        assertEq(0, _getFlowRate(address(ethx), buyer, admin));
     }
 
     function testBuyListingDAI() public {
         uint256 initialPriceInDai = 100e18; // 100 DAI
         uint256 taxRateBPS = 120; // 1.2% per month
 
-        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+        commonAds.createAdGroup(
             recipient,
-            address(dai),
-            initialPriceInDai,
-            baseTaxRateBPS,
+            AdSpaceConfig({
+                currency: address(dai),
+                initialPrice: initialPriceInDai,
+                taxRate: taxRateBPS
+            }),
             3
         );
-        address beneficiary = group.beneficiary;
 
         address buyer = _getAccount(69, 1000 ether);
 
@@ -275,14 +313,15 @@ contract ListingTest is ListingBase {
     }
 
     function testSelfAssessListingPrice() public {
-        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+        (address admin, ) = commonAds.createAdGroup(
             recipient,
-            CurrencyTransferLib.NATIVE_TOKEN,
-            initialPrice,
-            baseTaxRateBPS,
+            AdSpaceConfig({
+                currency: CurrencyTransferLib.NATIVE_TOKEN,
+                initialPrice: initialPrice,
+                taxRate: baseTaxRateBPS
+            }),
             3
         );
-        address beneficiary = group.beneficiary;
 
         IDirectListings.Listing memory listing = marketplace.getListing(1);
 
@@ -318,12 +357,12 @@ contract ListingTest is ListingBase {
 
         assertEq(
             _computeAssetFlowRate(baseTaxRateBPS, initialPrice),
-            _getFlowRate(address(ethx), buyer, beneficiary)
+            _getFlowRate(address(ethx), buyer, admin)
         );
 
         console.log(
             "flowBefore",
-            uint256(int256(_getFlowRate(address(ethx), buyer, beneficiary)))
+            uint256(int256(_getFlowRate(address(ethx), buyer, admin)))
         );
 
         vm.prank(buyer);
@@ -331,12 +370,12 @@ contract ListingTest is ListingBase {
 
         console.log(
             "flowAfter",
-            uint256(int256(_getFlowRate(address(ethx), buyer, beneficiary)))
+            uint256(int256(_getFlowRate(address(ethx), buyer, admin)))
         );
 
         assertEq(
             _computeAssetFlowRate(baseTaxRateBPS, newPrice),
-            _getFlowRate(address(ethx), buyer, beneficiary)
+            _getFlowRate(address(ethx), buyer, admin)
         );
 
         priceChangeParams.pricePerToken = initialPrice;
@@ -346,7 +385,7 @@ contract ListingTest is ListingBase {
 
         assertEq(
             _computeAssetFlowRate(baseTaxRateBPS, initialPrice),
-            _getFlowRate(address(ethx), buyer, beneficiary)
+            _getFlowRate(address(ethx), buyer, admin)
         );
 
         priceChangeParams.pricePerToken = newPrice;
@@ -381,15 +420,6 @@ contract ListingTest is ListingBase {
         );
     }
 
-    function testUpgradeAccountDaiToDaiX() public {
-        address account = vm.addr(69);
-
-        FlowSender flowSender = new FlowSender(daix);
-
-        vm.prank(account);
-        flowSender.gainDaiX(1000e18);
-    }
-
     function testCreateDaiXStream() public {
         address account = vm.addr(69);
         address account2 = vm.addr(96);
@@ -422,14 +452,15 @@ contract ListingTest is ListingBase {
     }
 
     function testCancelListing() public {
-        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+        (address admin, ) = commonAds.createAdGroup(
             recipient,
-            CurrencyTransferLib.NATIVE_TOKEN,
-            initialPrice,
-            baseTaxRateBPS,
+            AdSpaceConfig({
+                currency: CurrencyTransferLib.NATIVE_TOKEN,
+                initialPrice: initialPrice,
+                taxRate: baseTaxRateBPS
+            }),
             3
         );
-        address beneficiary = group.beneficiary;
 
         address buyer = _getAccount(69, 1000 ether);
 
@@ -447,27 +478,28 @@ contract ListingTest is ListingBase {
         );
 
         assertEq(
-            _getFlowRate(address(ethx), buyer, beneficiary),
+            _getFlowRate(address(ethx), buyer, admin),
             _computeFlowRate(baseTaxRateBPS, initialPrice)
         );
-        assertEq(adCommons.ownerOf(1), buyer);
+        assertEq(commonAds.ownerOf(1), buyer);
 
         vm.prank(buyer);
         marketplace.cancelListing(1);
 
-        assertEq(_getFlowRate(address(ethx), buyer, beneficiary), 0);
-        assertEq(adCommons.ownerOf(1), beneficiary);
+        assertEq(_getFlowRate(address(ethx), buyer, admin), 0);
+        assertEq(commonAds.ownerOf(1), admin);
     }
 
     function testForecloseListing() public {
-        AdCommonOwnership.AdGroup memory group = adCommons.createAdGroup(
+        (address admin, ) = commonAds.createAdGroup(
             recipient,
-            CurrencyTransferLib.NATIVE_TOKEN,
-            initialPrice,
-            baseTaxRateBPS,
+            AdSpaceConfig({
+                currency: CurrencyTransferLib.NATIVE_TOKEN,
+                initialPrice: initialPrice,
+                taxRate: baseTaxRateBPS
+            }),
             3
         );
-        address beneficiary = group.beneficiary;
 
         address buyer = _getAccount(69, 1000 ether);
 
@@ -486,11 +518,11 @@ contract ListingTest is ListingBase {
 
         vm.warp(block.timestamp + 7 days);
 
-        vm.prank(beneficiary);
+        vm.prank(admin);
         marketplace.forecloseListing(1);
 
-        assertEq(adCommons.ownerOf(1), beneficiary);
-        assertEq(_getFlowRate(address(ethx), buyer, beneficiary), 0);
+        assertEq(commonAds.ownerOf(1), admin);
+        assertEq(_getFlowRate(address(ethx), buyer, admin), 0);
 
         _upgradeETH(ethx, buyer, _taxDuePerWeek(baseTaxRateBPS, initialPrice));
         vm.prank(buyer);

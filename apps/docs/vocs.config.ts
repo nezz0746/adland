@@ -1,15 +1,25 @@
-import { defineConfig } from 'vocs'
+import { defineConfig } from "vocs";
 
 export default defineConfig({
-  title: 'Docs',
+  title: "AdLand",
   sidebar: [
     {
-      text: 'Getting Started',
-      link: '/getting-started',
+      text: "What is Adland ?",
+      link: "/what-is-adland",
     },
     {
-      text: 'Example',
-      link: '/example',
+      text: "Use cases",
+      collapsed: true,
+      items: [
+        {
+          text: "Offchain: Display Ads",
+          link: "/use-cases/web-ads",
+        },
+        {
+          text: "Offchain: Social Media Ads",
+          link: "/use-cases/social-media-ads",
+        },
+      ],
     },
   ],
-})
+});

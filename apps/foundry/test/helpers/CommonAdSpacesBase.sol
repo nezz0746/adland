@@ -6,17 +6,15 @@ import "@thirdweb-dev/dynamic-contracts/src/interface/IExtension.sol";
 import {TWProxy} from "contracts/infra/TWProxy.sol";
 import {MarketplaceV3} from "contracts/prebuilts/marketplace/entrypoint/MarketplaceV3.sol";
 import {DirectListingsLogic} from "contracts/prebuilts/marketplace/direct-listings/DirectListingsLogic.sol";
-import {WETH9} from "../../src/mocks/WETH9.sol";
+import {WETH9} from "../mocks/WETH9.sol";
 import {DSTestFull} from "./DSTestFull.sol";
 import {ISuperfluid, ISuperToken} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
 import {SuperToken} from "@superfluid-finance/ethereum-contracts/contracts/superfluid/SuperToken.sol";
-import {FlowSender} from "./FlowSender.t.sol";
 import {SuperfluidFrameworkDeployer, SuperfluidFrameworkDeploymentSteps} from "@superfluid-finance/ethereum-contracts/contracts/utils/SuperfluidFrameworkDeployer.sol";
 import {TestToken} from "@superfluid-finance/ethereum-contracts/contracts/utils/TestToken.sol";
 import {ConstantFlowAgreementV1} from "@superfluid-finance/ethereum-contracts/contracts/agreements/ConstantFlowAgreementV1.sol";
 import {ISETH} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/tokens/ISETH.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
-import {AdCommonOwnership} from "../../src/AdCommonOwnership.sol";
 import {CurrencyTransferLib} from "contracts/lib/CurrencyTransferLib.sol";
 import {ERC1820RegistryCompiled} from "@superfluid-finance/ethereum-contracts/contracts/libs/ERC1820RegistryCompiled.sol";
 import {ERC6551Registry} from "erc6551/ERC6551Registry.sol";
@@ -24,9 +22,11 @@ import {AccountV3Upgradable, AccountV3} from "tokenbound/AccountV3Upgradable.sol
 import {AccountProxy} from "tokenbound/AccountProxy.sol";
 import {AccountGuardian} from "tokenbound/AccountGuardian.sol";
 import {Multicall3} from "multicall-authenticated/Multicall3.sol";
-import {AccountCreatorConfig} from "../../src/ERC6551AccountCreator.sol";
+import {AccountCreatorConfig} from "../../src/lib/ERC6551AccountCreator.sol";
 
-contract ListingBase is DSTestFull, IExtension {
+import {CommonAdSpaces} from "../../src/CommonAdSpaces.sol";
+
+contract CommonAdSpacesBase is DSTestFull, IExtension {
     address wethSepolia = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9;
     address cfav1Sepolia = 0x6836F23d6171D74Ef62FcF776655aBcD2bcd62Ef;
     address daixSepolia = 0x9Ce2062b085A2268E8d769fFC040f6692315fd2c;
@@ -35,7 +35,7 @@ contract ListingBase is DSTestFull, IExtension {
     SuperfluidFrameworkDeploymentSteps.Framework sf;
     WETH9 public weth;
     DirectListingsLogic public marketplace;
-    AdCommonOwnership public adCommons;
+    CommonAdSpaces public commonAds;
     address internal deployer = vm.addr(420);
     address internal recipient = vm.addr(421);
     uint256 initialPrice = 0.1 ether;
@@ -82,7 +82,7 @@ contract ListingBase is DSTestFull, IExtension {
 
         vm.label(address(marketplace), "marketplace");
 
-        adCommons = new AdCommonOwnership(
+        commonAds = new CommonAdSpaces(
             address(marketplace),
             AccountCreatorConfig(
                 registry,
@@ -103,7 +103,7 @@ contract ListingBase is DSTestFull, IExtension {
         );
         MarketplaceV3(payable(address(marketplace))).grantRole(
             keccak256("LISTER_ROLE"),
-            address(adCommons)
+            address(commonAds)
         );
 
         MarketplaceV3(payable(address(marketplace))).revokeRole(
@@ -112,10 +112,10 @@ contract ListingBase is DSTestFull, IExtension {
         );
         MarketplaceV3(payable(address(marketplace))).grantRole(
             keccak256("ASSET_ROLE"),
-            address(adCommons)
+            address(commonAds)
         );
 
-        label(address(adCommons), "adCommons");
+        label(address(commonAds), "commonAds");
         label(recipient, "recipient");
 
         vm.stopPrank();
