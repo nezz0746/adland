@@ -5,7 +5,6 @@ import {console} from "forge-std/Script.sol";
 import {WETH9} from "../test/mocks/WETH9.sol";
 import {BaseScript} from "./Base.s.sol";
 import {TWProxy} from "contracts/infra/TWProxy.sol";
-import {AdCommonOwnership} from "../src/AdCommonOwnership.sol";
 import {MarketplaceV3} from "contracts/prebuilts/marketplace/entrypoint/MarketplaceV3.sol";
 import {DirectListingsLogic} from "contracts/prebuilts/marketplace/direct-listings/DirectListingsLogic.sol";
 import "@thirdweb-dev/dynamic-contracts/src/interface/IExtension.sol";
@@ -15,7 +14,10 @@ import {ISuperfluid, ISuperToken} from "@superfluid-finance/ethereum-contracts/c
 import {ERC6551Registry} from "erc6551/ERC6551Registry.sol";
 import {AccountV3Upgradable, AccountV3} from "tokenbound/AccountV3Upgradable.sol";
 import {AccountProxy} from "tokenbound/AccountProxy.sol";
-import {AccountCreatorConfig} from "../src/ERC6551AccountCreator.sol";
+import {AccountCreatorConfig} from "../src/lib/ERC6551AccountCreator.sol";
+
+import {CommonAdSpaces} from "../src/CommonAdSpaces.sol";
+import {AdSpaceConfig} from "../src/lib/Structs.sol";
 
 interface IPaymaster {
     function deposit() external payable;
@@ -89,7 +91,7 @@ contract MarketplaceScript is BaseScript, IExtension {
 
         _saveDeployment(address(marketplace), "DirectListingsLogic");
 
-        AdCommonOwnership adCommons = new AdCommonOwnership(
+        CommonAdSpaces commonAdSpaces = new CommonAdSpaces(
             address(marketplace),
             AccountCreatorConfig(
                 registry,
@@ -99,7 +101,7 @@ contract MarketplaceScript is BaseScript, IExtension {
             "ipfs://QmVg1sVvrWJ78cEmuxKpnHDKCWcCM8y8VaAJ8gpfe55ut6"
         );
 
-        _saveDeployment(address(adCommons), "AdCommonOwnership");
+        _saveDeployment(address(commonAdSpaces), "CommonAdSpaces");
 
         console.log("Sender:grantRoleTo: ", deployer);
         _grantTaxManagerRole(address(marketplace), deployer);
@@ -118,7 +120,7 @@ contract MarketplaceScript is BaseScript, IExtension {
         );
         MarketplaceV3(payable(address(marketplace))).grantRole(
             keccak256("LISTER_ROLE"),
-            address(adCommons)
+            address(commonAdSpaces)
         );
 
         MarketplaceV3(payable(address(marketplace))).revokeRole(
@@ -127,15 +129,13 @@ contract MarketplaceScript is BaseScript, IExtension {
         );
         MarketplaceV3(payable(address(marketplace))).grantRole(
             keccak256("ASSET_ROLE"),
-            address(adCommons)
+            address(commonAdSpaces)
         );
 
-        // Create sample ad group
-        adCommons.createAdGroup(
+        // Open sample ad group of 5 ads for deployer
+        commonAdSpaces.createAdGroup(
             deployer,
-            CurrencyTransferLib.NATIVE_TOKEN,
-            0.001 ether,
-            120,
+            AdSpaceConfig(CurrencyTransferLib.NATIVE_TOKEN, 0.001 ether, 120),
             5
         );
     }
