@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {console} from "forge-std/Script.sol";
-import {WETH9} from "../src/mocks/WETH9.sol";
+import {WETH9} from "../test/mocks/WETH9.sol";
 import {BaseScript} from "./Base.s.sol";
 import {TWProxy} from "contracts/infra/TWProxy.sol";
 import {AdCommonOwnership} from "../src/AdCommonOwnership.sol";

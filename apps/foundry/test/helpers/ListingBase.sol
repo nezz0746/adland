@@ -6,7 +6,7 @@ import "@thirdweb-dev/dynamic-contracts/src/interface/IExtension.sol";
 import {TWProxy} from "contracts/infra/TWProxy.sol";
 import {MarketplaceV3} from "contracts/prebuilts/marketplace/entrypoint/MarketplaceV3.sol";
 import {DirectListingsLogic} from "contracts/prebuilts/marketplace/direct-listings/DirectListingsLogic.sol";
-import {WETH9} from "../../src/mocks/WETH9.sol";
+import {WETH9} from "../mocks/WETH9.sol";
 import {DSTestFull} from "./DSTestFull.sol";
 import {ISuperfluid, ISuperToken} from "@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol";
 import {SuperToken} from "@superfluid-finance/ethereum-contracts/contracts/superfluid/SuperToken.sol";
