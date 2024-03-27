@@ -18,17 +18,17 @@ Learn more about plural property here: [RadicalxChange](https://www.radicalxchan
 ![AdLand](/protocol.png)
 
 1. An individual or community decide it needs revenue in order to grow or sustain itself. They
-can open an **AdGroup** on the protocol specifying an initial price and tax rate (in % of asset price / week).
+can open a number of **AdSpaces** on the protocol specifying an initial price and tax rate (in % of asset price / week).
 
-2. Advertisers can now buy inidividual **AdSpaces**. In the case of plural property, the buyer is actually
+2. Advertisers can now buy theses inidividual *AdSpaces*. In the case of plural property, the buyer is actually
 acquire a lease certificate (in the form of an NFT) which he can then manage as he pleases, by self-assessing
-price and mangagin the Ad data. As soon as a advertiser buys an AdSpace, he'll start streaming (second-by-second token transfers) tax to the AdGroup
-beneficiary.
+price and mangagin the Ad data. As soon as a advertiser buys an *AdSpaces*, he'll start streaming (second-by-second token transfers) tax to the AdGroup
+admin.
 
-3. AdGroups beneficiaries, **AdGroupAdmins** are smart accounts that recieve all revenue from tax and purchases (from initial sales or renounced asset resale) and
+3. **AdGroupAdmins** are smart accounts that recieve all revenue from tax and purchases (from initial sales or renounced asset resale) and
 the right to manage that revenue. Any strategies can then be implemented for distribution (managed, split, pool, ...).
 
-4. Finally, as of writing, *Ad Data* is simply stored as a uri in the Ad contract.  
+4. Finally, *AdSpace* owners can set the data for their ad space, while *AdGroupAdmins* can set a custom AdStrategy to incorporate their own logic for resolving ad data.
 
 ### Perpetual Listings
 
@@ -38,7 +38,7 @@ listing only represents the current owner of the asset (making them "Marketplace
 ### Taxes
 
 Taxes are paid by advertisers to the AdGroupAdming in the form of payment streams. They are paid in [Superfluid SuperTokens](https://docs.superfluid.finance/docs/concepts/overview/super-tokens) streams managed directly by the marketplace during
-the lifecycle of each AdSpace leases.
+the lifecycle of each *AdSpaces* leases.
 - On purchase, a stream from buyer to AdGroupAdmin is created while the stream from seller to AdGroupAdmin is closed. 
 - On self-assessment, the stream to be proportional to the self-assessed value and the tax rate.
 - On renouncement, the stream is closed.
