@@ -24,6 +24,8 @@ contract CommonAdSpacesTest is CommonAdSpacesBase {
     uint256 constant baseTaxRateBPS = 120; // 1.2% per month
     uint256 constant MAX_BPS = 10_000;
     uint256 constant DEFAULT_QUANTITY = 1;
+    string buyerAdURI = "https://www.google.com";
+    string buyer2AdURI = "https://www.yahoo.com";
 
     function testCannotTransferAsOwnerOfListing() public {
         commonAds.createAdGroup(
@@ -153,6 +155,9 @@ contract CommonAdSpacesTest is CommonAdSpacesBase {
             initialPrice
         );
 
+        vm.prank(buyer);
+        commonAds.updateAdURI(1, buyerAdURI);
+
         vm.warp(block.timestamp + 1 days);
 
         assertEq(admin.balance, initialPrice);
@@ -171,6 +176,8 @@ contract CommonAdSpacesTest is CommonAdSpacesBase {
 
         _upgradeETH(ethx, buyer2, 1 ether);
 
+        assertEq(commonAds.getAdUri(1), buyerAdURI);
+
         vm.prank(buyer2);
         marketplace.buyFromListing{value: initialPrice}(
             1,
@@ -179,6 +186,8 @@ contract CommonAdSpacesTest is CommonAdSpacesBase {
             CurrencyTransferLib.NATIVE_TOKEN,
             initialPrice
         );
+
+        assertEq(commonAds.getAdUri(1), "");
 
         assertEq(commonAds.ownerOf(1), buyer2);
         vm.prank(buyer2);

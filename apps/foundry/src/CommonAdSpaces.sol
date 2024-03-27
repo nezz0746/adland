@@ -228,18 +228,25 @@ contract CommonAdSpaces is ERC721Royalty, ICommonAdSpaces {
     function _beforeTokenTransfer(
         address from,
         address,
-        uint256,
+        uint256 adId,
         uint256
-    ) internal view override {
+    ) internal override {
         require(
             // Can only transfer from this contract or marketplace
             (from == address(0) || from == address(this)) ||
                 msg.sender == address(marketplace),
             "CommonAdSpaces: Only marketplace can transfer"
         );
+
+        _resetAd(adId);
     }
 
     function tokenURI(uint256) public view override returns (string memory) {
         return placeholderURI;
+    }
+
+    function _resetAd(uint256 adId) internal {
+        ads[adId].uri = "";
+        ads[adId].strategy = IAdStrategy(address(0));
     }
 }
